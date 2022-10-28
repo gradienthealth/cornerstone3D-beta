@@ -1986,6 +1986,7 @@ interface IImage {
         lastRenderTime?: number;
     };
     voiLUT?: CPUFallbackLUT;
+    voiLUTFunction: string;
     width: number;
     windowCenter: number[] | number;
     windowWidth: number[] | number;
@@ -2516,8 +2517,7 @@ interface IVolumeViewport extends IViewport {
     getFrameOfReferenceUID: () => string;
     getImageData(volumeId?: string): IImageData | undefined;
     getIntensityFromWorld(point: Point3): number;
-    // (undocumented)
-    getProperties: () => any;
+    getProperties: () => VolumeViewportProperties;
     getSlabThickness(): number;
     hasImageURI: (imageURI: string) => boolean;
     hasVolumeId: (volumeId: string) => boolean;
@@ -2795,6 +2795,7 @@ type Metadata = {
     Columns: number;
     Rows: number;
     voiLut: Array<VOI>;
+    VOILUTFunction: string;
 };
 
 // @public (undocumented)
@@ -3938,6 +3939,7 @@ type StackViewportNewStackEventDetail = {
 // @public
 type StackViewportProperties = {
     voiRange?: VOIRange;
+    VOILUTFunction?: VOILUTFunctionType;
     invert?: boolean;
     interpolationType?: InterpolationType;
     rotation?: number;
@@ -4418,6 +4420,7 @@ type VoiModifiedEventDetail = {
     viewportId: string;
     range: VOIRange;
     volumeId?: string;
+    VOILUTFunction?: VOILUTFunctionType;
 };
 
 // @public (undocumented)
@@ -4505,6 +4508,7 @@ export class VolumeRotateMouseWheelTool extends BaseTool {
 // @public
 type VolumeViewportProperties = {
     voiRange?: VOIRange;
+    VOILUTFunction?: VOILUTFunctionType;
 };
 
 // @public (undocumented)
