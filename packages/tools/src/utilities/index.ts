@@ -29,6 +29,7 @@ import * as boundingBox from './boundingBox';
 import * as planarFreehandROITool from './planarFreehandROITool';
 import * as rectangleROITool from './rectangleROITool';
 import * as stackPrefetch from './stackPrefetch';
+import * as touch from './touch';
 
 // Events
 import { triggerEvent } from '@cornerstonejs/core';
@@ -43,6 +44,7 @@ export {
   throttle,
   orientation,
   isObject,
+  touch,
   triggerEvent,
   calibrateImageSpacing,
   segmentation,

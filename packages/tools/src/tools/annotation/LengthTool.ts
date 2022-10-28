@@ -130,7 +130,9 @@ class LengthTool extends AnnotationTool {
    *
    */
   addNewAnnotation = (
-    evt: EventTypes.MouseDownActivateEventType
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType
   ): LengthAnnotation => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -254,7 +256,7 @@ class LengthTool extends AnnotationTool {
   };
 
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
     annotation: LengthAnnotation,
     interactionType: InteractionTypes
   ): void => {
@@ -287,7 +289,7 @@ class LengthTool extends AnnotationTool {
   };
 
   handleSelectedCallback(
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
     annotation: LengthAnnotation,
     handle: ToolHandle,
     interactionType = 'mouse'
@@ -332,7 +334,11 @@ class LengthTool extends AnnotationTool {
   }
 
   _mouseUpCallback = (
-    evt: EventTypes.MouseUpEventType | EventTypes.MouseClickEventType
+    evt:
+      | EventTypes.MouseUpEventType
+      | EventTypes.MouseClickEventType
+      | EventTypes.TouchTapEventType
+      | EventTypes.TouchEndEventType
   ) => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -381,7 +387,10 @@ class LengthTool extends AnnotationTool {
   };
 
   _mouseDragCallback = (
-    evt: EventTypes.MouseDragEventType | EventTypes.MouseMoveEventType
+    evt:
+      | EventTypes.MouseDragEventType
+      | EventTypes.MouseMoveEventType
+      | EventTypes.TouchDragEventType
   ) => {
     this.isDrawing = true;
     const eventDetail = evt.detail;
@@ -487,8 +496,18 @@ class LengthTool extends AnnotationTool {
       this._mouseUpCallback as EventListener
     );
 
-    // element.addEventListener(Events.TOUCH_END, this._mouseUpCallback)
-    // element.addEventListener(Events.TOUCH_DRAG, this._mouseDragCallback)
+    element.addEventListener(
+      Events.TOUCH_END,
+      this._mouseUpCallback as EventListener
+    );
+    element.addEventListener(
+      Events.TOUCH_DRAG,
+      this._mouseDragCallback as EventListener
+    );
+    element.addEventListener(
+      Events.TOUCH_TAP,
+      this._mouseUpCallback as EventListener
+    );
   };
 
   _deactivateModify = (element: HTMLDivElement) => {
@@ -507,8 +526,18 @@ class LengthTool extends AnnotationTool {
       this._mouseUpCallback as EventListener
     );
 
-    // element.removeEventListener(Events.TOUCH_END, this._mouseUpCallback)
-    // element.removeEventListener(Events.TOUCH_DRAG, this._mouseDragCallback)
+    element.removeEventListener(
+      Events.TOUCH_END,
+      this._mouseUpCallback as EventListener
+    );
+    element.removeEventListener(
+      Events.TOUCH_DRAG,
+      this._mouseDragCallback as EventListener
+    );
+    element.removeEventListener(
+      Events.TOUCH_TAP,
+      this._mouseUpCallback as EventListener
+    );
   };
 
   _activateDraw = (element: HTMLDivElement) => {
@@ -531,8 +560,18 @@ class LengthTool extends AnnotationTool {
       this._mouseUpCallback as EventListener
     );
 
-    // element.addEventListener(Events.TOUCH_END, this._mouseUpCallback)
-    // element.addEventListener(Events.TOUCH_DRAG, this._mouseDragCallback)
+    element.addEventListener(
+      Events.TOUCH_END,
+      this._mouseUpCallback as EventListener
+    );
+    element.addEventListener(
+      Events.TOUCH_DRAG,
+      this._mouseDragCallback as EventListener
+    );
+    element.addEventListener(
+      Events.TOUCH_TAP,
+      this._mouseUpCallback as EventListener
+    );
   };
 
   _deactivateDraw = (element: HTMLDivElement) => {
@@ -555,8 +594,18 @@ class LengthTool extends AnnotationTool {
       this._mouseUpCallback as EventListener
     );
 
-    // element.removeEventListener(Events.TOUCH_END, this._mouseUpCallback)
-    // element.removeEventListener(Events.TOUCH_DRAG, this._mouseDragCallback)
+    element.removeEventListener(
+      Events.TOUCH_END,
+      this._mouseUpCallback as EventListener
+    );
+    element.removeEventListener(
+      Events.TOUCH_DRAG,
+      this._mouseDragCallback as EventListener
+    );
+    element.removeEventListener(
+      Events.TOUCH_TAP,
+      this._mouseUpCallback as EventListener
+    );
   };
 
   /**
