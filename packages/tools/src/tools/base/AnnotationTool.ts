@@ -50,7 +50,9 @@ abstract class AnnotationTool extends BaseTool {
    * @param interactionType -  The interaction type used to add the annotation.
    */
   abstract addNewAnnotation(
-    evt: EventTypes.MouseDownActivateEventType,
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType,
     interactionType: InteractionTypes
   ): Annotation;
 
@@ -81,7 +83,7 @@ abstract class AnnotationTool extends BaseTool {
    * @param interactionType - The interaction type the handle was selected with.
    */
   abstract handleSelectedCallback(
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
     annotation: Annotation,
     handle: ToolHandle,
     interactionType: InteractionTypes
@@ -95,7 +97,7 @@ abstract class AnnotationTool extends BaseTool {
    * @param interactionType - The interaction type used to select the tool.
    */
   abstract toolSelectedCallback(
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
     annotation: Annotation,
     interactionType: InteractionTypes
   ): void;
@@ -320,7 +322,8 @@ abstract class AnnotationTool extends BaseTool {
     element: HTMLDivElement,
     annotation: Annotation,
     canvasCoords: Types.Point2,
-    proximity: number
+    proximity: number,
+    interactionType = 'mouse'
   ): ToolHandle | undefined {
     const enabledElement = getEnabledElement(element);
     const { viewport } = enabledElement;
