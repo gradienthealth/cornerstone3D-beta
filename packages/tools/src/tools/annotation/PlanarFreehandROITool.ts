@@ -115,22 +115,30 @@ class PlanarFreehandROITool extends AnnotationTool {
   isEditingOpen = false;
 
   private activateDraw: (
-    evt: EventTypes.MouseDownActivateEventType,
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType,
     annotation: PlanarFreehandROIAnnotation,
     viewportIdsToRender: string[]
   ) => void;
   private activateClosedContourEdit: (
-    evt: EventTypes.MouseDownActivateEventType,
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType,
     annotation: PlanarFreehandROIAnnotation,
     viewportIdsToRender: string[]
   ) => void;
   private activateOpenContourEdit: (
-    evt: EventTypes.MouseDownActivateEventType,
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType,
     annotation: PlanarFreehandROIAnnotation,
     viewportIdsToRender: string[]
   ) => void;
   private activateOpenContourEndEdit: (
-    evt: EventTypes.MouseDownActivateEventType,
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType,
     annotation: PlanarFreehandROIAnnotation,
     viewportIdsToRender: string[]
   ) => void;
@@ -215,7 +223,9 @@ class PlanarFreehandROITool extends AnnotationTool {
    * @returns The `PlanarFreehandROIAnnotation` object.
    */
   addNewAnnotation = (
-    evt: EventTypes.MouseDownActivateEventType
+    evt:
+      | EventTypes.MouseDownActivateEventType
+      | EventTypes.TouchStartActivateEventType
   ): PlanarFreehandROIAnnotation => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -287,7 +297,7 @@ class PlanarFreehandROITool extends AnnotationTool {
    * @param interactionType - interaction type (mouse, touch)
    */
   handleSelectedCallback = (
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
     annotation: PlanarFreehandROIAnnotation,
     handle: ToolHandle,
     interactionType = 'mouse'
@@ -307,7 +317,7 @@ class PlanarFreehandROITool extends AnnotationTool {
    * Edits the open or closed contour when the line is grabbed and dragged.
    */
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
     annotation: PlanarFreehandROIAnnotation,
     interactionType: InteractionTypes
   ): void => {

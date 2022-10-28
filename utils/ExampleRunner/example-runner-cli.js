@@ -114,7 +114,7 @@ if (configuration.examples) {
     // console.log('buildConfig result', conf);
     shell.ShellString(conf).to(webpackConfigPath);
     shell.cd(exBasePath);
-    shell.exec(`webpack serve --progress --config ${webpackConfigPath}`);
+    shell.exec(`webpack serve --progress --host 0.0.0.0 --config ${webpackConfigPath}`);
   } else {
     console.log('=> To run an example:');
     console.log('  $ npm run example -- PUT_YOUR_EXAMPLE_NAME_HERE\n');
