@@ -23,6 +23,7 @@ import type {
   FlipDirection,
   VolumeViewportProperties,
   OrientationVectors,
+  VOIRange,
 } from '../types';
 import type { ViewportInput } from '../types/IViewport';
 import type IVolumeViewport from '../types/IVolumeViewport';
@@ -30,9 +31,16 @@ import { RENDERING_DEFAULTS, EPSILON } from '../constants';
 import { Events, BlendModes, OrientationAxis } from '../enums';
 import eventTarget from '../eventTarget';
 import type { vtkSlabCamera as vtkSlabCameraType } from './vtkClasses/vtkSlabCamera';
-import { imageIdToURI, triggerEvent } from '../utilities';
+import {
+  imageIdToURI,
+  triggerEvent,
+  createSigmoidRGBTransferFunction,
+  windowLevel as windowLevelUtil,
+} from '../utilities';
+import VOILUTFunctionType from '../enums/VOILUTFunctionType';
 import { VoiModifiedEventDetail } from '../types/EventTypes';
 import deepFreeze from '../utilities/deepFreeze';
+import createLinearRGBTransferFunction from '../utilities/createLinearRGBTransferFunction';
 
 const ORIENTATION = {
   axial: {
@@ -66,9 +74,13 @@ class VolumeViewport extends Viewport implements IVolumeViewport {
   private _FrameOfReferenceUID: string;
   private _useAcquisitionPlaneForViewPlane = false;
 
+  // Viewport Properties
+  private voiRange: VOIRange;
+  private VOILUTFunction: VOILUTFunctionType;
+  private voiApplied: boolean;
+
   constructor(props: ViewportInput) {
     super(props);
-
     this.useCPURendering = getShouldUseCPURendering();
 
     if (this.useCPURendering) {
@@ -169,17 +181,37 @@ class VolumeViewport extends Viewport implements IVolumeViewport {
   }
 
   /**
-   * Sets the properties for the volume viewport on the volume
+   * Sets the VOILUTFunction property for the volume viewport on the volume
+   *
+   * @param VOILUTFunction - Sets the voi mode (LINEAR, EXACT_LINEAR, or SIGMOID)
+   * @param volumeId - The volume id to set the properties for (if undefined, the first volume)
+   * @param suppressEvents - If true, the viewport will not emit events
+   */
+  private setVOILUTFunction(
+    voiLUTFunction: VOILUTFunctionType,
+    volumeId?: string,
+    suppressEvents?: boolean
+  ): void {
+    // make sure the VOI LUT function is valid in the VOILUTFunctionType which is enum
+    if (Object.values(VOILUTFunctionType).indexOf(voiLUTFunction) === -1) {
+      voiLUTFunction = VOILUTFunctionType.LINEAR;
+    }
+    this.VOILUTFunction = voiLUTFunction;
+    this.setVOI(this.voiRange, volumeId, suppressEvents);
+  }
+
+  /**
+   * Sets the VOI properties on the volume
    * (if fusion, it sets it for the first volume in the fusion)
    *
    * @param voiRange - Sets the lower and upper voi
    * @param volumeId - The volume id to set the properties for (if undefined, the first volume)
    * @param suppressEvents - If true, the viewport will not emit events
    */
-  public setProperties(
-    { voiRange }: VolumeViewportProperties = {},
+  private setVOI(
+    voiRange: VOIRange,
     volumeId?: string,
-    suppressEvents = false
+    suppressEvents?: boolean
   ): void {
     if (volumeId !== undefined && !this.getActor(volumeId)) {
       return;
@@ -192,12 +224,10 @@ class VolumeViewport extends Viewport implements IVolumeViewport {
     }
 
     let volumeActor;
-
     if (volumeId) {
       const actorEntry = actorEntries.find((entry: ActorEntry) => {
         return entry.uid === volumeId;
       });
-
       volumeActor = actorEntry?.actor as vtkVolume;
     }
 
@@ -207,25 +237,73 @@ class VolumeViewport extends Viewport implements IVolumeViewport {
       volumeId = actorEntries[0].uid;
     }
 
-    if (!voiRange) {
-      return;
+    let voiRangeToUse = voiRange;
+    if (typeof voiRangeToUse === 'undefined') {
+      const imageData = volumeActor.getMapper().getInputData();
+      const range = imageData.getPointData().getScalars().getRange();
+      const maxVoiRange = { lower: range[0], upper: range[1] };
+      voiRangeToUse = maxVoiRange;
     }
 
-    // Todo: later when we have more properties, refactor the setVoiRange code below
-    const { lower, upper } = voiRange;
-    volumeActor.getProperty().getRGBTransferFunction(0).setRange(lower, upper);
+    // scaling logic here
+    // https://github.com/Kitware/vtk-js/blob/c6f2e12cddfe5c0386a73f0793eb6d9ab20d573e/Sources/Rendering/OpenGL/VolumeMapper/index.js#L957-L972
+    // Todo, windowlevelTool needs to send property instead of
+    // directly changing the transferfunction range which is not valid for sigmoid
+    if (this.VOILUTFunction === VOILUTFunctionType.SIGMOID) {
+      const cfun = createSigmoidRGBTransferFunction(voiRangeToUse);
+      volumeActor.getProperty().setRGBTransferFunction(0, cfun);
+    } else {
+      const cfun = createLinearRGBTransferFunction(voiRangeToUse);
+      volumeActor.getProperty().setRGBTransferFunction(0, cfun);
+    }
+
+    this.voiApplied = true;
+    this.voiRange = voiRangeToUse;
 
     if (!suppressEvents) {
       const eventDetail: VoiModifiedEventDetail = {
         viewportId: this.id,
         range: voiRange,
         volumeId: volumeId,
+        VOILUTFunction: this.VOILUTFunction,
       };
 
       triggerEvent(this.element, Events.VOI_MODIFIED, eventDetail);
     }
   }
 
+  /**
+   * Sets the properties for the volume viewport on the volume
+   * (if fusion, it sets it for the first volume in the fusion)
+   *
+   * @param voiRange - Sets the lower and upper voi
+   * @param VOILUTFunction - Sets the voi mode (LINEAR, EXACT_LINEAR, or SIGMOID)
+   * @param volumeId - The volume id to set the properties for (if undefined, the first volume)
+   * @param suppressEvents - If true, the viewport will not emit events
+   */
+  public setProperties(
+    { voiRange, VOILUTFunction }: VolumeViewportProperties = {},
+    volumeId?: string,
+    suppressEvents = false
+  ): void {
+    if (voiRange) {
+      this.setVOI(voiRange, volumeId, suppressEvents);
+    }
+    if (VOILUTFunction) {
+      this.setVOILUTFunction(VOILUTFunction, volumeId, suppressEvents);
+    }
+  }
+
+  /**
+   * Retrieve the viewport properties
+   * @returns viewport properties including voi, invert, interpolation type, rotation, flip
+   */
+  public getProperties = (): VolumeViewportProperties => {
+    return {
+      voiRange: this.voiRange,
+      VOILUTFunction: this.VOILUTFunction,
+    };
+  };
   /**
    * Creates volume actors for all volumes defined in the `volumeInputArray`.
    * For each entry, if a `callback` is supplied, it will be called with the new volume actor as input.
@@ -265,6 +343,8 @@ class VolumeViewport extends Viewport implements IVolumeViewport {
     for (let i = 0; i < volumeInputArray.length; i++) {
       const { volumeId, actorUID, slabThickness } = volumeInputArray[i];
 
+      // TODO this should use the viewport setProperties API
+      // rather than modifying color transfer functions directly
       const actor = await createVolumeActor(
         volumeInputArray[i],
         this.element,

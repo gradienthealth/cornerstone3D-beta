@@ -591,6 +591,7 @@ interface IImage {
         lastRenderTime?: number;
     };
     voiLUT?: CPUFallbackLUT;
+    voiLUTFunction: string;
     width: number;
     windowCenter: number[] | number;
     windowWidth: number[] | number;
@@ -996,8 +997,7 @@ interface IVolumeViewport extends IViewport {
     getFrameOfReferenceUID: () => string;
     getImageData(volumeId?: string): IImageData | undefined;
     getIntensityFromWorld(point: Point3): number;
-    // (undocumented)
-    getProperties: () => any;
+    getProperties: () => VolumeViewportProperties;
     getSlabThickness(): number;
     hasImageURI: (imageURI: string) => boolean;
     hasVolumeId: (volumeId: string) => boolean;
@@ -1062,6 +1062,7 @@ type Metadata = {
     Columns: number;
     Rows: number;
     voiLut: Array<VOI>;
+    VOILUTFunction: string;
 };
 
 // @public (undocumented)
@@ -1174,6 +1175,7 @@ type StackViewportNewStackEventDetail = {
 // @public
 type StackViewportProperties = {
     voiRange?: VOIRange;
+    VOILUTFunction?: VOILUTFunctionType;
     invert?: boolean;
     interpolationType?: InterpolationType;
     rotation?: number;
@@ -1259,6 +1261,16 @@ type VOI = {
 };
 
 // @public
+enum VOILUTFunctionType {
+    // (undocumented)
+    EXACT_LINEAR = 'EXACT_LINEAR',
+    // (undocumented)
+    LINEAR = 'LINEAR',
+    // (undocumented)
+    SIGMOID = 'SIGMOID',
+}
+
+// @public
 type VoiModifiedEvent = CustomEvent_2<VoiModifiedEventDetail>;
 
 // @public
@@ -1266,6 +1278,7 @@ type VoiModifiedEventDetail = {
     viewportId: string;
     range: VOIRange;
     volumeId?: string;
+    VOILUTFunction?: VOILUTFunctionType;
 };
 
 // @public (undocumented)
@@ -1342,6 +1355,7 @@ type VolumeNewImageEventDetail = {
 // @public
 type VolumeViewportProperties = {
     voiRange?: VOIRange;
+    VOILUTFunction?: VOILUTFunctionType;
 };
 
 // (No @packageDocumentation comment for this package)

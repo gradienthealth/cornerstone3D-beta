@@ -64,7 +64,14 @@ class WindowLevelTool extends BaseTool {
         volumeId,
         renderingEngine.id
       );
-      [lower, upper] = rgbTransferFunction.getRange();
+      const properties = viewport.getProperties();
+      // TODO this should rely on viewport properties only but the initialization
+      // touches the rgbTransferFunction directly
+      if (!properties.voiRange) {
+        [lower, upper] = rgbTransferFunction.getRange();
+      } else {
+        ({ lower, upper } = properties.voiRange);
+      }
       const volume = cache.getVolume(volumeId);
       modality = volume.metadata.Modality;
       isPreScaled = volume.scaling && Object.keys(volume.scaling).length > 0;
@@ -99,12 +106,6 @@ class WindowLevelTool extends BaseTool {
       });
     }
 
-    const eventDetail: Types.EventTypes.VoiModifiedEventDetail = {
-      volumeId,
-      viewportId,
-      range: newRange,
-    };
-
     if (viewport instanceof StackViewport) {
       viewport.setProperties({
         voiRange: newRange,
@@ -114,14 +115,17 @@ class WindowLevelTool extends BaseTool {
       return;
     }
 
-    // Only trigger event for volume since the stack event is triggered inside
-    // the stackViewport, Todo: we need the setProperties API on the volume viewport
-    triggerEvent(element, Enums.Events.VOI_MODIFIED, eventDetail);
-    rgbTransferFunction.setRange(newRange.lower, newRange.upper);
+    if (viewport instanceof VolumeViewport) {
+      viewport.setProperties({
+        voiRange: newRange,
+      });
 
-    viewportsContainingVolumeUID.forEach((vp) => {
-      vp.render();
-    });
+      viewportsContainingVolumeUID.forEach((vp) => {
+        vp.render();
+      });
+
+      return;
+    }
   }
 
   getPTNewRange({ deltaPointsCanvas, lower, upper, clientHeight }) {

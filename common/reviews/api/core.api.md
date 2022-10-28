@@ -8,6 +8,7 @@ import type { mat4 } from 'gl-matrix';
 import { vec3 } from 'gl-matrix';
 import type vtkActor from '@kitware/vtk.js/Rendering/Core/Actor';
 import type { vtkCamera } from '@kitware/vtk.js/Rendering/Core/Camera';
+import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
 import type { vtkImageData } from '@kitware/vtk.js/Common/DataModel/ImageData';
 import vtkImageSlice from '@kitware/vtk.js/Rendering/Core/ImageSlice';
 import type { vtkObject } from '@kitware/vtk.js/interfaces';
@@ -378,6 +379,9 @@ function createFloat32SharedArray(length: number): Float32Array;
 function createLocalVolume(options: LocalVolumeOptions, volumeId: string, preventCache?: boolean): ImageVolume;
 
 // @public (undocumented)
+function createSigmoidRGBTransferFunction(voiRange: VOIRange, approximationNodes?: number): vtkColorTransferFunction;
+
+// @public (undocumented)
 function createUint8SharedArray(length: number): Uint8Array;
 
 // @public (undocumented)
@@ -421,7 +425,8 @@ declare namespace Enums {
         InterpolationType,
         RequestType,
         ViewportType,
-        OrientationAxis
+        OrientationAxis,
+        VOILUTFunctionType
     }
 }
 export { Enums }
@@ -779,6 +784,8 @@ interface IImage {
     };
     // (undocumented)
     voiLUT?: CPUFallbackLUT;
+    // (undocumented)
+    voiLUTFunction: string;
     // (undocumented)
     width: number;
     // (undocumented)
@@ -1392,7 +1399,7 @@ interface IVolumeViewport extends IViewport {
     // (undocumented)
     getIntensityFromWorld(point: Point3): number;
     // (undocumented)
-    getProperties: () => any;
+    getProperties: () => VolumeViewportProperties;
     // (undocumented)
     getSlabThickness(): number;
     // (undocumented)
@@ -1466,6 +1473,7 @@ type Metadata = {
     Columns: number;
     Rows: number;
     voiLut: Array<VOI>;
+    VOILUTFunction: string;
 };
 
 declare namespace metaData {
@@ -1777,7 +1785,7 @@ export class StackViewport extends Viewport implements IStackViewport {
     // (undocumented)
     setImageIdIndex(imageIdIndex: number): Promise<string>;
     // (undocumented)
-    setProperties({ voiRange, invert, interpolationType, rotation, }?: StackViewportProperties, suppressEvents?: boolean): void;
+    setProperties({ voiRange, VOILUTFunction, invert, interpolationType, rotation, }?: StackViewportProperties, suppressEvents?: boolean): void;
     // (undocumented)
     setStack(imageIds: Array<string>, currentImageIdIndex?: number): Promise<string>;
     // (undocumented)
@@ -1802,6 +1810,7 @@ type StackViewportNewStackEventDetail = {
 // @public (undocumented)
 type StackViewportProperties = {
     voiRange?: VOIRange;
+    VOILUTFunction?: VOILUTFunctionType;
     invert?: boolean;
     interpolationType?: InterpolationType;
     rotation?: number;
@@ -1914,6 +1923,7 @@ function unregisterAllImageLoaders(): void;
 declare namespace utilities {
     export {
         invertRgbTransferFunction,
+        createSigmoidRGBTransferFunction,
         scaleRGBTransferFunction as scaleRgbTransferFunction,
         triggerEvent,
         imageIdToURI,
@@ -2105,6 +2115,16 @@ type VOI = {
 };
 
 // @public (undocumented)
+enum VOILUTFunctionType {
+    // (undocumented)
+    EXACT_LINEAR = "EXACT_LINEAR",
+    // (undocumented)
+    LINEAR = "LINEAR",
+    // (undocumented)
+    SIGMOID = "SIGMOID"
+}
+
+// @public (undocumented)
 type VoiModifiedEvent = CustomEvent_2<VoiModifiedEventDetail>;
 
 // @public (undocumented)
@@ -2112,6 +2132,7 @@ type VoiModifiedEventDetail = {
     viewportId: string;
     range: VOIRange;
     volumeId?: string;
+    VOILUTFunction?: VOILUTFunctionType;
 };
 
 // @public (undocumented)
@@ -2214,6 +2235,8 @@ export class VolumeViewport extends Viewport implements IVolumeViewport {
     // (undocumented)
     getIntensityFromWorld(point: Point3): number;
     // (undocumented)
+    getProperties: () => VolumeViewportProperties;
+    // (undocumented)
     getSlabThickness(): number;
     // (undocumented)
     hasImageURI: (imageURI: string) => boolean;
@@ -2228,7 +2251,7 @@ export class VolumeViewport extends Viewport implements IVolumeViewport {
     // (undocumented)
     setOrientation(orientation: OrientationAxis, immediate?: boolean): void;
     // (undocumented)
-    setProperties({ voiRange }?: VolumeViewportProperties, volumeId?: string, suppressEvents?: boolean): void;
+    setProperties({ voiRange, VOILUTFunction }?: VolumeViewportProperties, volumeId?: string, suppressEvents?: boolean): void;
     // (undocumented)
     setSlabThickness(slabThickness: number, filterActorUIDs?: any[]): void;
     // (undocumented)
@@ -2244,6 +2267,7 @@ export class VolumeViewport extends Viewport implements IVolumeViewport {
 // @public (undocumented)
 type VolumeViewportProperties = {
     voiRange?: VOIRange;
+    VOILUTFunction?: VOILUTFunctionType;
 };
 
 declare namespace windowLevel {
