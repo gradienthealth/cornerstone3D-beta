@@ -21,6 +21,7 @@ import type {
   Point3,
   FlipDirection,
   EventTypes,
+  DisplayArea,
 } from '../types';
 import type { ViewportInput, IViewport } from '../types/IViewport';
 import type { vtkSlabCamera } from './vtkClasses/vtkSlabCamera';
@@ -62,7 +63,7 @@ class Viewport implements IViewport {
   _actors: Map<string, any>;
   /** Default options for the viewport which includes orientation, viewPlaneNormal and backgroundColor */
   readonly defaultOptions: any;
-  /** options for the viewport which includes orientation axis and backgroundColor */
+  /** options for the viewport which includes orientation axis, backgroundColor and displayArea */
   options: ViewportInputOptions;
   private _suppressCameraModifiedEvents = false;
   /** A flag representing if viewport methods should fire events or not */
@@ -72,6 +73,10 @@ class Viewport implements IViewport {
    * the relative pan/zoom
    */
   protected initialCamera: ICamera;
+  /** The camera that is defined for resetting displayArea to ensure absolute displayArea
+   * settings
+   */
+  private initialDisplayAreaCamera: ICamera;
 
   constructor(props: ViewportInput) {
     this.id = props.id;
@@ -149,12 +154,16 @@ class Viewport implements IViewport {
    * @param options - The viewport options to set.
    * @param immediate - If `true`, renders the viewport after the options are set.
    */
-  public setOptions(options: ViewportInputOptions, immediate = false): void {
+  public setOptions(
+    options: ViewportInputOptions,
+    immediate = false,
+    storeAsInitialCamera = false
+  ): void {
     this.options = <ViewportInputOptions>_cloneDeep(options);
 
     // TODO When this is needed we need to move the camera position.
     // We can steal some logic from the tools we build to do this.
-
+    this.setDisplayArea(this.options.displayArea, storeAsInitialCamera);
     if (immediate) {
       this.render();
     }
@@ -528,6 +537,85 @@ class Viewport implements IViewport {
   }
 
   /**
+   * Sets the camera to an initial bounds. If
+   * resetPan and resetZoom are true it places the focal point at the center of
+   * the volume (or slice); otherwise, only the camera zoom and camera Pan or Zoom
+   * is reset for the current view.
+   * @param displayArea - The display area of interest.
+   * @param storeAsInitialCamera - If true, reset camera is stored as the initial camera (to allow differences to
+   *   be detected for pan/zoom values)
+   * @param suppressEvents - If true, don't fire displayArea event.
+   */
+  public setDisplayArea(
+    displayArea: DisplayArea,
+    storeAsInitialCamera = false,
+    suppressEvents = false
+  ): void {
+    this.setCamera(this.initialDisplayAreaCamera, false); // ensure displayArea is absolute
+
+    const {
+      imageArea = { areaX: 1, areaY: 1 },
+      imageFocalPoint = { focalX: 0.5, focalY: 0.5 },
+    } = displayArea;
+    // setPan functions requires offsetviewer to be initialized, which does not seem to be the case at constructor time
+    // vtkWindowRenderer.displayToWorld seems to always return NaN until image passes first render?
+    const imageData = this.getDefaultImageData();
+    if (imageData) {
+      const dimensions = imageData.getDimensions();
+      const idx = [
+        Math.floor(dimensions[0] * imageFocalPoint.focalX),
+        Math.floor(dimensions[1] * imageFocalPoint.focalY),
+        Math.floor(dimensions[2] * 0.5), // always use middle of imageData, even for volume viewport which clips bounds to center
+      ];
+      const newFocalPoint = <Point3>[0, 0, 0];
+      imageData.indexToWorld(idx, newFocalPoint);
+      const previousCamera = this.getCamera();
+      const { focalPoint, position } = previousCamera;
+      const delta = vec3.subtract(vec3.create(), newFocalPoint, focalPoint);
+      const newFocal = vec3.subtract(
+        vec3.create(),
+        focalPoint,
+        vec3.multiply(vec3.create(), delta, <Point3>[2, 2, 2])
+      );
+      const newPosition = vec3.subtract(
+        vec3.create(),
+        position,
+        vec3.multiply(vec3.create(), delta, <Point3>[2, 2, 2])
+      );
+      this.setCamera(
+        {
+          ...previousCamera,
+          focalPoint: newFocal as Point3,
+          position: newPosition as Point3,
+        },
+        storeAsInitialCamera
+      );
+    }
+
+    const { areaX, areaY } = imageArea;
+    const zoom = Math.min(this.getZoom() / areaX, this.getZoom() / areaY);
+    this.setZoom(zoom, storeAsInitialCamera);
+
+    if (storeAsInitialCamera) {
+      this.options.displayArea = displayArea;
+    }
+
+    if (!suppressEvents) {
+      const eventDetail: EventTypes.DisplayAreaModifiedEventDetail = {
+        viewportId: this.id,
+        displayArea: displayArea,
+        storeAsInitialCamera: storeAsInitialCamera,
+      };
+
+      triggerEvent(this.element, Events.DISPLAY_AREA_MODIFIED, eventDetail);
+    }
+  }
+
+  public getDisplayArea(): DisplayArea | undefined {
+    return this.options.displayArea;
+  }
+
+  /**
    * Resets the camera based on the rendering volume(s) bounds. If
    * resetPan and resetZoom are true it places the focal point at the center of
    * the volume (or slice); otherwise, only the camera zoom and camera Pan or Zoom
@@ -555,7 +643,6 @@ class Viewport implements IViewport {
     });
 
     const previousCamera = _cloneDeep(this.getCamera());
-
     const bounds = renderer.computeVisiblePropBounds();
     const focalPoint = <Point3>[0, 0, 0];
     const imageData = this.getDefaultImageData();
@@ -672,8 +759,20 @@ class Viewport implements IViewport {
 
     const modifiedCamera = _cloneDeep(this.getCamera());
 
+    this.setInitialDisplayAreaCamera(_cloneDeep(this.getCamera()));
+
     if (storeAsInitialCamera) {
       this.setInitialCamera(modifiedCamera);
+    }
+
+    if (
+      imageData &&
+      this.options.displayArea &&
+      resetZoom &&
+      resetPan &&
+      resetToCenter
+    ) {
+      this.setDisplayArea(this.options.displayArea, storeAsInitialCamera);
     }
 
     const RESET_CAMERA_EVENT = {
@@ -698,6 +797,16 @@ class Viewport implements IViewport {
    */
   protected setInitialCamera(camera: ICamera): void {
     this.initialCamera = camera;
+  }
+
+  /**
+   * Sets the provided camera as the displayArea camera.
+   * This allows computing differences applied later as compared to the initial
+   * position, for things like zoom and pan.
+   * @param camera - to store as the initial value.
+   */
+  protected setInitialDisplayAreaCamera(camera: ICamera): void {
+    this.initialDisplayAreaCamera = camera;
   }
 
   /**

@@ -491,6 +491,23 @@ interface CustomEvent_2<T = any> extends Event {
 }
 
 // @public (undocumented)
+type DisplayArea = {
+    imageArea: InitialDisplayArea;
+    imageFocalPoint: ImageFocalPoint;
+};
+
+// @public (undocumented)
+type DisplayAreaModifiedEvent = CustomEvent_2<DisplayAreaModifiedEventDetail>;
+
+// @public (undocumented)
+type DisplayAreaModifiedEventDetail = {
+    viewportId: string;
+    displayArea: DisplayArea;
+    volumeId?: string;
+    storeAsInitialCamera?: boolean;
+};
+
+// @public (undocumented)
 type ElementDisabledEvent = CustomEvent_2<ElementDisabledEventDetail>;
 
 // @public (undocumented)
@@ -537,6 +554,8 @@ export enum EVENTS {
     CAMERA_MODIFIED = "CORNERSTONE_CAMERA_MODIFIED",
     // (undocumented)
     CAMERA_RESET = "CORNERSTONE_CAMERA_RESET",
+    // (undocumented)
+    DISPLAY_AREA_MODIFIED = "CORNERSTONE_DISPLAY_AREA_MODIFIED",
     // (undocumented)
     ELEMENT_DISABLED = "CORNERSTONE_ELEMENT_DISABLED",
     // (undocumented)
@@ -594,6 +613,8 @@ declare namespace EventTypes {
         CameraModifiedEvent,
         VoiModifiedEvent,
         VoiModifiedEventDetail,
+        DisplayAreaModifiedEvent,
+        DisplayAreaModifiedEventDetail,
         ElementDisabledEvent,
         ElementDisabledEventDetail,
         ElementEnabledEvent,
@@ -1482,6 +1503,8 @@ interface IViewport {
     // (undocumented)
     getDefaultActor(): ActorEntry;
     // (undocumented)
+    getDisplayArea(): DisplayArea | undefined;
+    // (undocumented)
     getFrameOfReferenceUID: () => string;
     // (undocumented)
     getPan(): Point2;
@@ -1512,7 +1535,9 @@ interface IViewport {
     // (undocumented)
     setCamera(cameraInterface: ICamera, storeAsInitialCamera?: boolean): void;
     // (undocumented)
-    setOptions(options: ViewportInputOptions, immediate: boolean): void;
+    setDisplayArea(displayArea: DisplayArea, storeAsInitialCamera?: boolean, callResetCamera?: boolean, suppressEvents?: boolean): any;
+    // (undocumented)
+    setOptions(options: ViewportInputOptions, immediate: boolean, storeAsInitialCamera?: boolean): void;
     // (undocumented)
     setPan(pan: Point2, storeAsInitialCamera?: boolean): any;
     // (undocumented)
@@ -2154,6 +2179,7 @@ declare namespace Types {
         ViewportInputOptions,
         VOIRange,
         VOI,
+        DisplayArea,
         FlipDirection,
         ICachedImage,
         ICachedVolume,
@@ -2277,6 +2303,8 @@ export class Viewport implements IViewport {
     // (undocumented)
     getDefaultActor(): ActorEntry;
     // (undocumented)
+    getDisplayArea(): DisplayArea | undefined;
+    // (undocumented)
     _getEdges(bounds: Array<number>): Array<[number[], number[]]>;
     // (undocumented)
     _getFocalPointForResetCamera(centeredFocalPoint: Point3, previousCamera: ICamera, { resetPan, resetToCenter }: {
@@ -2336,9 +2364,13 @@ export class Viewport implements IViewport {
     // (undocumented)
     protected setCameraNoEvent(camera: ICamera): void;
     // (undocumented)
+    setDisplayArea(displayArea: DisplayArea, storeAsInitialCamera?: boolean, suppressEvents?: boolean): void;
+    // (undocumented)
     protected setInitialCamera(camera: ICamera): void;
     // (undocumented)
-    setOptions(options: ViewportInputOptions, immediate?: boolean): void;
+    protected setInitialDisplayAreaCamera(camera: ICamera): void;
+    // (undocumented)
+    setOptions(options: ViewportInputOptions, immediate?: boolean, storeAsInitialCamera?: boolean): void;
     // (undocumented)
     setOrientationOfClippingPlanes(vtkPlanes: Array<vtkPlane>, slabThickness: number, viewPlaneNormal: Point3, focalPoint: Point3): void;
     // (undocumented)
@@ -2371,6 +2403,7 @@ export class Viewport implements IViewport {
 type ViewportInputOptions = {
     background?: [number, number, number];
     orientation?: OrientationAxis | OrientationVectors;
+    displayArea?: DisplayArea;
     suppressEvents?: boolean;
     parallelProjection?: boolean;
 };
