@@ -4,6 +4,7 @@ import Point3 from './Point3';
 import ViewportInputOptions from './ViewportInputOptions';
 import { ActorEntry } from './IActor';
 import ViewportType from '../enums/ViewportType';
+import DisplayArea from './displayArea';
 
 /**
  * Viewport interface for cornerstone viewports
@@ -72,7 +73,20 @@ interface IViewport {
   /** triggers render for all actors in the viewport */
   render(): void;
   /** set options for the viewport */
-  setOptions(options: ViewportInputOptions, immediate: boolean): void;
+  setOptions(
+    options: ViewportInputOptions,
+    immediate: boolean,
+    storeAsInitialCamera?: boolean
+  ): void;
+  /** set displayArea for the viewport */
+  setDisplayArea(
+    displayArea: DisplayArea,
+    storeAsInitialCamera?: boolean,
+    callResetCamera?: boolean,
+    suppressEvents?: boolean
+  );
+  /** returns the displayArea */
+  getDisplayArea(): DisplayArea | undefined;
   /** reset camera and options*/
   reset(immediate: boolean): void;
   /** returns the canvas */
