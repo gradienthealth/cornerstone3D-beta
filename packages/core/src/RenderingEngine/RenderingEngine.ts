@@ -499,6 +499,7 @@ class RenderingEngine implements IRenderingEngine {
       options = {
         background: [0, 0, 0],
         orientation: null,
+        displayArea: null,
       };
 
       if (type === ViewportType.ORTHOGRAPHIC) {

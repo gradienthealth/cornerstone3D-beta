@@ -21,6 +21,9 @@ const { ViewportType } = Enums;
 const renderingEngineId = 'myRenderingEngine';
 const viewportId = 'CT_STACK';
 
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+}
 // ======== Set up page ======== //
 setTitleAndDescription(
   'Programmatic Pan and Zoom with initial pan and zoom',
@@ -101,6 +104,57 @@ addButtonToToolbar({
       renderingEngine.getViewport(viewportId)
     );
     viewport.setZoom(viewport.getZoom(), true);
+  },
+});
+
+addButtonToToolbar({
+  title: 'Set Random Display Area',
+  onClick: () => {
+    // Get the rendering engine
+    const renderingEngine = getRenderingEngine(renderingEngineId);
+
+    // Get the stack viewport
+    const viewport = <Types.IVolumeViewport>(
+      renderingEngine.getViewport(viewportId)
+    );
+    viewport.setDisplayArea({
+      imageArea: {
+        areaX: getRandomArbitrary(0.5, 1.5),
+        areaY: getRandomArbitrary(0.5, 1.5),
+      },
+      imageFocalPoint: {
+        focalX: getRandomArbitrary(0.4, 0.6),
+        focalY: getRandomArbitrary(0.4, 0.6),
+      },
+    });
+    viewport.render();
+  },
+});
+
+addButtonToToolbar({
+  title: 'Set Random Display Area And Store As Initial Camera',
+  onClick: () => {
+    // Get the rendering engine
+    const renderingEngine = getRenderingEngine(renderingEngineId);
+
+    // Get the stack viewport
+    const viewport = <Types.IVolumeViewport>(
+      renderingEngine.getViewport(viewportId)
+    );
+    viewport.setDisplayArea(
+      {
+        imageArea: {
+          areaX: getRandomArbitrary(0.5, 1.5),
+          areaY: getRandomArbitrary(0.5, 1.5),
+        },
+        imageFocalPoint: {
+          focalX: getRandomArbitrary(0.4, 0.6),
+          focalY: getRandomArbitrary(0.4, 0.6),
+        },
+      },
+      true
+    );
+    viewport.render();
   },
 });
 
