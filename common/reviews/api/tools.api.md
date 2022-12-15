@@ -1601,7 +1601,7 @@ declare namespace EventTypes {
 
 declare namespace EventTypes_2 {
     export {
-        NormalizedMouseEventDetail,
+        NormalizedInteractionEventDetail,
         NormalizedMouseEventType,
         NormalizedTouchEventType,
         AnnotationAddedEventDetail,
@@ -2956,12 +2956,9 @@ enum MouseBindings {
 }
 
 // @public (undocumented)
-type MouseClickEventDetail = NormalizedMouseEventDetail & {
+type MouseClickEventDetail = NormalizedInteractionEventDetail & {
     mouseButton: number;
-    startPoints: IPoints;
-    lastPoints: IPoints;
-    currentPoints: IPoints;
-    deltaPoints: IPoints;
+
 };
 
 // @public (undocumented)
@@ -2983,54 +2980,37 @@ class MouseCursor {
 }
 
 // @public (undocumented)
-type MouseDoubleClickEventDetail = NormalizedMouseEventDetail & {
-    startPoints: IPoints;
-    lastPoints: IPoints;
-    currentPoints: IPoints;
-    deltaPoints: IPoints;
-};
+type MouseDoubleClickEventDetail = NormalizedInteractionEventDetail & {};
 
 // @public (undocumented)
 type MouseDoubleClickEventType = Types_2.CustomEventType<MouseDoubleClickEventDetail>;
 
 // @public (undocumented)
-type MouseDownActivateEventDetail = NormalizedMouseEventDetail & {
+type MouseDownActivateEventDetail = NormalizedInteractionEventDetail & {
     mouseButton: number;
-    startPoints: IPoints;
-    lastPoints: IPoints;
-    currentPoints: IPoints;
-    deltaPoints: IPoints;
 };
 
 // @public (undocumented)
 type MouseDownActivateEventType = Types_2.CustomEventType<MouseDownActivateEventDetail>;
 
 // @public (undocumented)
-type MouseDownEventDetail = NormalizedMouseEventDetail & {
+type MouseDownEventDetail = NormalizedInteractionEventDetail & {
     mouseButton: number;
-    startPoints: IPoints;
-    lastPoints: IPoints;
-    currentPoints: IPoints;
-    deltaPoints: IPoints;
 };
 
 // @public (undocumented)
 type MouseDownEventType = Types_2.CustomEventType<MouseDownEventDetail>;
 
 // @public (undocumented)
-type MouseDragEventDetail = NormalizedMouseEventDetail & {
+type MouseDragEventDetail = NormalizedInteractionEventDetail & {
     mouseButton: number;
-    startPoints: IPoints;
-    lastPoints: IPoints;
-    currentPoints: IPoints;
-    deltaPoints: IPoints;
 };
 
 // @public (undocumented)
 type MouseDragEventType = Types_2.CustomEventType<MouseDragEventDetail>;
 
 // @public (undocumented)
-type MouseMoveEventDetail = NormalizedMouseEventDetail & {
+type MouseMoveEventDetail = NormalizedInteractionEventDetail & {
     currentPoints: IPoints;
 };
 
@@ -3038,19 +3018,16 @@ type MouseMoveEventDetail = NormalizedMouseEventDetail & {
 type MouseMoveEventType = Types_2.CustomEventType<MouseMoveEventDetail>;
 
 // @public (undocumented)
-type MouseUpEventDetail = NormalizedMouseEventDetail & {
+type MouseUpEventDetail = NormalizedInteractionEventDetail & {
     mouseButton: number;
-    startPoints: IPoints;
-    lastPoints: IPoints;
-    currentPoints: IPoints;
-    deltaPoints: IPoints;
+
 };
 
 // @public (undocumented)
 type MouseUpEventType = Types_2.CustomEventType<MouseUpEventDetail>;
 
 // @public (undocumented)
-type MouseWheelEventDetail = NormalizedMouseEventDetail & {
+type MouseWheelEventDetail = NormalizedInteractionEventDetail & {
     detail: Record<string, any>;
     wheel: {
         spinX: number;
@@ -3066,20 +3043,24 @@ type MouseWheelEventDetail = NormalizedMouseEventDetail & {
 type MouseWheelEventType = Types_2.CustomEventType<MouseWheelEventDetail>;
 
 // @public (undocumented)
-type NormalizedMouseEventDetail = {
-    event: Record<string, unknown> | MouseEvent;
+type NormalizedInteractionEventDetail = {
+    event: Record<string, unknown> | MouseEvent | TouchEvent;
     eventName: string;
     renderingEngineId: string;
     viewportId: string;
     camera: Record<string, unknown>;
     element: HTMLDivElement;
+    startPoints: ITouchPoints;
+    lastPoints: ITouchPoints;
+    currentPoints: ITouchPoints;
+    deltaPoints: IPoints;
 };
 
 // @public (undocumented)
-type NormalizedMouseEventType = Types_2.CustomEventType<NormalizedMouseEventDetail>;
+type NormalizedMouseEventType = Types_2.CustomEventType<NormalizedInteractionEventDetail>;
 
 // @public (undocumented)
-type NormalizedTouchEventType = Types_2.CustomEventType<NormalizedTouchEventDetail>;
+type NormalizedTouchEventType = Types_2.CustomEventType<NormalizedInteractionEventDetail>;
 
 declare namespace orientation_2 {
     export {
@@ -4516,29 +4497,20 @@ declare namespace touch {
 }
 
 // @public (undocumented)
-type TouchDragEventDetail = NormalizedTouchEventDetail & {
-    startPoints: ITouchPoints;
-    lastPoints: ITouchPoints;
-    currentPoints: ITouchPoints;
+type TouchDragEventDetail = NormalizedInteractionEventDetail & {
     startPointsList: ITouchPoints[];
     lastPointsList: ITouchPoints[];
     currentPointsList: ITouchPoints[];
-    deltaPoints: IPoints;
-    deltaDistance: IDistance;
 };
 
 // @public (undocumented)
 type TouchDragEventType = Types_2.CustomEventType<TouchDragEventDetail>;
 
 // @public (undocumented)
-type TouchEndEventDetail = NormalizedTouchEventDetail & {
-    startPoints: ITouchPoints;
-    lastPoints: ITouchPoints;
-    currentPoints: ITouchPoints;
+type TouchEndEventDetail = NormalizedInteractionEventDetail & {
     startPointsList: ITouchPoints[];
     lastPointsList: ITouchPoints[];
     currentPointsList: ITouchPoints[];
-    deltaPoints: IPoints;
     deltaDistance: IDistance;
 };
 
@@ -4546,25 +4518,21 @@ type TouchEndEventDetail = NormalizedTouchEventDetail & {
 type TouchEndEventType = Types_2.CustomEventType<TouchEndEventDetail>;
 
 // @public (undocumented)
-type TouchPressEventDetail = NormalizedTouchEventDetail & {
+type TouchPressEventDetail = NormalizedInteractionEventDetail & {
     startPointsList: ITouchPoints[];
     lastPointsList: ITouchPoints[];
-    startPoints: ITouchPoints;
-    lastPoints: ITouchPoints;
+
 };
 
 // @public (undocumented)
 type TouchPressEventType = Types_2.CustomEventType<TouchPressEventDetail>;
 
 // @public (undocumented)
-type TouchStartActivateEventDetail = NormalizedTouchEventDetail & {
-    startPoints: ITouchPoints;
-    lastPoints: ITouchPoints;
-    currentPoints: ITouchPoints;
+type TouchStartActivateEventDetail = NormalizedInteractionEventDetail & {
+
     startPointsList: ITouchPoints[];
     lastPointsList: ITouchPoints[];
     currentPointsList: ITouchPoints[];
-    deltaPoints: IPoints;
     deltaDistance: IDistance;
 };
 
@@ -4572,14 +4540,10 @@ type TouchStartActivateEventDetail = NormalizedTouchEventDetail & {
 type TouchStartActivateEventType = Types_2.CustomEventType<TouchStartActivateEventDetail>;
 
 // @public (undocumented)
-type TouchStartEventDetail = NormalizedTouchEventDetail & {
-    startPoints: ITouchPoints;
-    lastPoints: ITouchPoints;
-    currentPoints: ITouchPoints;
+type TouchStartEventDetail = NormalizedInteractionEventDetail & {
     startPointsList: ITouchPoints[];
     lastPointsList: ITouchPoints[];
     currentPointsList: ITouchPoints[];
-    deltaPoints: IPoints;
     deltaDistance: IDistance;
 };
 
@@ -4587,7 +4551,7 @@ type TouchStartEventDetail = NormalizedTouchEventDetail & {
 type TouchStartEventType = Types_2.CustomEventType<TouchStartEventDetail>;
 
 // @public (undocumented)
-type TouchSwipeEventDetail = NormalizedTouchEventDetail & {
+type TouchSwipeEventDetail = NormalizedInteractionEventDetail & {
     swipe: Swipe;
 };
 
@@ -4595,7 +4559,7 @@ type TouchSwipeEventDetail = NormalizedTouchEventDetail & {
 type TouchSwipeEventType = Types_2.CustomEventType<TouchSwipeEventDetail>;
 
 // @public (undocumented)
-type TouchTapEventDetail = NormalizedTouchEventDetail & {
+type TouchTapEventDetail = NormalizedInteractionEventDetail & {
     currentPointsList: ITouchPoints[];
     currentPoints: ITouchPoints;
     taps: number;

@@ -8,7 +8,7 @@ import { Swipe } from '../enums/Touch';
 /**
  * The normalized interaction event detail
  */
-type NormalizedInteractionventDetail = {
+type NormalizedInteractionEventDetail = {
   /** The original event object. */
   event: Record<string, unknown> | MouseEvent | TouchEvent;
   /** The normalized event name. */
@@ -191,7 +191,7 @@ type KeyUpEventDetail = KeyDownEventDetail;
 /**
  * EventDetail for mouseDown event
  */
-type MouseDownEventDetail = NormalizedInteractionventDetail & {
+type MouseDownEventDetail = NormalizedInteractionEventDetail & {
   /** The mouse button that was pressed. */
   mouseButton: number;
   /** The starting points of the mouse event. */
@@ -207,7 +207,7 @@ type MouseDownEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail for touchstart event
  */
-type TouchStartEventDetail = NormalizedInteractionventDetail & {
+type TouchStartEventDetail = NormalizedInteractionEventDetail & {
   /** The starting points of the touch event. */
   startPoints: ITouchPoints;
   /** The last points of the touch. */
@@ -229,7 +229,7 @@ type TouchStartEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail for mouseDrag event
  */
-type MouseDragEventDetail = NormalizedInteractionventDetail & {
+type MouseDragEventDetail = NormalizedInteractionEventDetail & {
   /** The mouse button that was pressed. */
   mouseButton: number;
   /** The starting points of the mouse event. */
@@ -245,7 +245,7 @@ type MouseDragEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail for touch drag event
  */
-type TouchDragEventDetail = NormalizedInteractionventDetail & {
+type TouchDragEventDetail = NormalizedInteractionEventDetail & {
   /** The starting points of the touch event. */
   startPoints: ITouchPoints;
   /** The last points of the touch. */
@@ -267,7 +267,7 @@ type TouchDragEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail mouseMove event
  */
-type MouseMoveEventDetail = NormalizedInteractionventDetail & {
+type MouseMoveEventDetail = NormalizedInteractionEventDetail & {
   /** The current mouse position. */
   currentPoints: IPoints;
 };
@@ -275,7 +275,7 @@ type MouseMoveEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail for mouseUp event
  */
-type MouseUpEventDetail = NormalizedInteractionventDetail & {
+type MouseUpEventDetail = NormalizedInteractionEventDetail & {
   /** The mouse button that was pressed. */
   mouseButton: number;
   /** The starting points of the mouse event. */
@@ -291,7 +291,7 @@ type MouseUpEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail for touch end event
  */
-type TouchEndEventDetail = NormalizedInteractionventDetail & {
+type TouchEndEventDetail = NormalizedInteractionEventDetail & {
   /** The starting points of the touch event. */
   startPoints: ITouchPoints;
   /** The last points of the touch. */
@@ -314,7 +314,7 @@ type TouchEndEventDetail = NormalizedInteractionventDetail & {
  * EventDetail for mouseDown Activate, it is triggered when mouseDown event is fired
  * but stopPropagation is not called, used for creating new annotation
  */
-type MouseDownActivateEventDetail = NormalizedInteractionventDetail & {
+type MouseDownActivateEventDetail = NormalizedInteractionEventDetail & {
   /** The mouse button that was pressed. */
   mouseButton: number;
   /** The starting points of the mouse event. */
@@ -331,7 +331,7 @@ type MouseDownActivateEventDetail = NormalizedInteractionventDetail & {
  * EventDetail for touchStart Activate, it is triggered when touchStart event is fired
  * but stopPropagation is not called, used for creating new annotation
  */
-type TouchStartActivateEventDetail = NormalizedInteractionventDetail & {
+type TouchStartActivateEventDetail = NormalizedInteractionEventDetail & {
   /** The starting points of the touch event. */
   startPoints: ITouchPoints;
   /** The last points of the touch. */
@@ -353,7 +353,7 @@ type TouchStartActivateEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail mouseClick (a mouse down which is followed by a mouse up)
  */
-type MouseClickEventDetail = NormalizedInteractionventDetail & {
+type MouseClickEventDetail = NormalizedInteractionEventDetail & {
   /** The mouse button that was pressed. */
   mouseButton: number;
   /** The starting points of the mouse event. */
@@ -369,7 +369,7 @@ type MouseClickEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail mouseClick (a mouse down which is followed by a mouse up)
  */
-type MouseDoubleClickEventDetail = NormalizedInteractionventDetail & {
+type MouseDoubleClickEventDetail = NormalizedInteractionEventDetail & {
   /** The starting points of the mouse event. */
   startPoints: IPoints;
   /** The last points of the mouse. */
@@ -383,13 +383,13 @@ type MouseDoubleClickEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail touchTap (successive taps which do not trigger touchstart)
  */
-type TouchTapEventDetail = NormalizedInteractionventDetail & {
+type TouchTapEventDetail = NormalizedInteractionEventDetail & {
   currentPointsList: ITouchPoints[];
   currentPoints: ITouchPoints;
   taps: number;
 };
 
-type TouchSwipeEventDetail = NormalizedInteractionventDetail & {
+type TouchSwipeEventDetail = NormalizedInteractionEventDetail & {
   /** Swipe direction  */
   swipe: Swipe;
 };
@@ -397,7 +397,7 @@ type TouchSwipeEventDetail = NormalizedInteractionventDetail & {
 /**
  * EventDetail touchPress (a longer press in the same spot)
  */
-type TouchPressEventDetail = NormalizedInteractionventDetail & {
+type TouchPressEventDetail = NormalizedInteractionEventDetail & {
   /** The starting points of the touch event. */
   startPointsList: ITouchPoints[];
   /** The last points of the touch. */
@@ -411,7 +411,7 @@ type TouchPressEventDetail = NormalizedInteractionventDetail & {
 /**
  * Mouse Wheel event detail
  */
-type MouseWheelEventDetail = NormalizedInteractionventDetail & {
+type MouseWheelEventDetail = NormalizedInteractionEventDetail & {
   /** wheel detail */
   detail: Record<string, any>;
   /** wheel information */
@@ -438,13 +438,13 @@ type MouseWheelEventDetail = NormalizedInteractionventDetail & {
  * The Normalized mouse event type
  */
 type NormalizedMouseEventType =
-  Types.CustomEventType<NormalizedInteractionventDetail>;
+  Types.CustomEventType<NormalizedInteractionEventDetail>;
 
 /**
  * The Normalized mouse event type
  */
 type NormalizedTouchEventType =
-  Types.CustomEventType<NormalizedInteractionventDetail>;
+  Types.CustomEventType<NormalizedInteractionEventDetail>;
 
 /**
  * The AnnotationAdded event type
@@ -619,7 +619,7 @@ type MouseDoubleClickEventType =
 type MouseWheelEventType = Types.CustomEventType<MouseWheelEventDetail>;
 
 export {
-  NormalizedInteractionventDetail,
+  NormalizedInteractionEventDetail,
   NormalizedMouseEventType,
   NormalizedTouchEventType,
   AnnotationAddedEventDetail,
