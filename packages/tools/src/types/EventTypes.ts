@@ -10,7 +10,7 @@ import { Swipe } from '../enums/Touch';
  */
 type NormalizedInteractionEventDetail = {
   /** The original event object. */
-  event: Record<string, unknown> | MouseEvent | TouchEvent;
+  event: Record<string, unknown> | MouseEvent;
   /** The normalized event name. */
   eventName: string;
   /** The unique identifier of the rendering engine. */
@@ -21,6 +21,9 @@ type NormalizedInteractionEventDetail = {
   camera: Record<string, unknown>;
   /** The element that the event was fired on. */
   element: HTMLDivElement;
+};
+
+type MousePointsDetail = {
   /** The starting points of the mouse event. */
   startPoints: IPoints;
   /** The last points of the mouse. */
@@ -29,6 +32,21 @@ type NormalizedInteractionEventDetail = {
   currentPoints: IPoints;
   /** The difference between the current and last points. */
   deltaPoints: IPoints;
+};
+
+type TouchPointsDetail = {
+  /** The starting points of the touch event. */
+  startPoints: ITouchPoints;
+  /** The last points of the touch. */
+  lastPoints: ITouchPoints;
+  /** The current touch position. */
+  currentPoints: ITouchPoints;
+
+  startPointsList: ITouchPoints[];
+  /** The last points of the touch. */
+  lastPointsList: ITouchPoints[];
+  /** The current touch position. */
+  currentPointsList: ITouchPoints[];
 };
 
 /**
@@ -199,44 +217,42 @@ type KeyUpEventDetail = KeyDownEventDetail;
 /**
  * EventDetail for mouseDown event
  */
-type MouseDownEventDetail = NormalizedInteractionEventDetail & {
-  /** The mouse button that was pressed. */
-  mouseButton: number;
-};
+type MouseDownEventDetail = NormalizedInteractionEventDetail &
+  MousePointsDetail & {
+    /** The mouse button that was pressed. */
+    mouseButton: number;
+  };
 
 /**
  * EventDetail for touchstart event
  */
-type TouchStartEventDetail = NormalizedInteractionEventDetail & {
-  startPointsList: ITouchPoints[];
-  /** The last points of the touch. */
-  lastPointsList: ITouchPoints[];
-  /** The current touch position. */
-  currentPointsList: ITouchPoints[];
-  /** The difference between distances between the current and last points. */
-  deltaDistance: IDistance;
-};
+type TouchStartEventDetail = NormalizedInteractionEventDetail &
+  TouchPointsDetail & {
+    /** The difference between the current and last points. */
+    deltaPoints: IPoints;
+    /** The difference between distances between the current and last points. */
+    deltaDistance: IDistance;
+  };
 
 /**
  * EventDetail for mouseDrag event
  */
-type MouseDragEventDetail = NormalizedInteractionEventDetail & {
-  /** The mouse button that was pressed. */
-  mouseButton: number;
-};
+type MouseDragEventDetail = NormalizedInteractionEventDetail &
+  MousePointsDetail & {
+    /** The mouse button that was pressed. */
+    mouseButton: number;
+  };
 
 /**
  * EventDetail for touch drag event
  */
-type TouchDragEventDetail = NormalizedInteractionEventDetail & {
-  startPointsList: ITouchPoints[];
-  /** The last points of the touch. */
-  lastPointsList: ITouchPoints[];
-  /** The current touch position. */
-  currentPointsList: ITouchPoints[];
-  /** The difference between distances between the current and last points. */
-  deltaDistance: IDistance;
-};
+type TouchDragEventDetail = NormalizedInteractionEventDetail &
+  TouchPointsDetail & {
+    /** The difference between the current and last points. */
+    deltaPoints: IPoints;
+    /** The difference between distances between the current and last points. */
+    deltaDistance: IDistance;
+  };
 
 /**
  * EventDetail mouseMove event
@@ -249,59 +265,59 @@ type MouseMoveEventDetail = NormalizedInteractionEventDetail & {
 /**
  * EventDetail for mouseUp event
  */
-type MouseUpEventDetail = NormalizedInteractionEventDetail & {
-  /** The mouse button that was pressed. */
-  mouseButton: number;
-};
+type MouseUpEventDetail = NormalizedInteractionEventDetail &
+  MousePointsDetail & {
+    /** The mouse button that was pressed. */
+    mouseButton: number;
+  };
 
 /**
  * EventDetail for touch end event
  */
-type TouchEndEventDetail = NormalizedInteractionEventDetail & {
-  startPointsList: ITouchPoints[];
-  /** The last points of the touch. */
-  lastPointsList: ITouchPoints[];
-  /** The current touch position. */
-  currentPointsList: ITouchPoints[];
-  /** The difference between distances between the current and last points. */
-  deltaDistance: IDistance;
-};
+type TouchEndEventDetail = NormalizedInteractionEventDetail &
+  TouchPointsDetail & {
+    /** The difference between the current and last points. */
+    deltaPoints: IPoints;
+    /** The difference between distances between the current and last points. */
+    deltaDistance: IDistance;
+  };
 
 /**
  * EventDetail for mouseDown Activate, it is triggered when mouseDown event is fired
  * but stopPropagation is not called, used for creating new annotation
  */
-type MouseDownActivateEventDetail = NormalizedInteractionEventDetail & {
-  /** The mouse button that was pressed. */
-  mouseButton: number;
-};
+type MouseDownActivateEventDetail = NormalizedInteractionEventDetail &
+  MousePointsDetail & {
+    /** The mouse button that was pressed. */
+    mouseButton: number;
+  };
 
 /**
  * EventDetail for touchStart Activate, it is triggered when touchStart event is fired
  * but stopPropagation is not called, used for creating new annotation
  */
-type TouchStartActivateEventDetail = NormalizedInteractionEventDetail & {
-  startPointsList: ITouchPoints[];
-  /** The last points of the touch. */
-  lastPointsList: ITouchPoints[];
-  /** The current touch position. */
-  currentPointsList: ITouchPoints[];
-  /** The difference between distances between the current and last points. */
-  deltaDistance: IDistance;
-};
+type TouchStartActivateEventDetail = NormalizedInteractionEventDetail &
+  TouchPointsDetail & {
+    /** The difference between the current and last points. */
+    deltaPoints: IPoints;
+    /** The difference between distances between the current and last points. */
+    deltaDistance: IDistance;
+  };
 
 /**
  * EventDetail mouseClick (a mouse down which is followed by a mouse up)
  */
-type MouseClickEventDetail = NormalizedInteractionEventDetail & {
-  /** The mouse button that was pressed. */
-  mouseButton: number;
-};
+type MouseClickEventDetail = NormalizedInteractionEventDetail &
+  MousePointsDetail & {
+    /** The mouse button that was pressed. */
+    mouseButton: number;
+  };
 
 /**
  * EventDetail mouseClick (a mouse down which is followed by a mouse up)
  */
-type MouseDoubleClickEventDetail = NormalizedInteractionEventDetail;
+type MouseDoubleClickEventDetail = NormalizedInteractionEventDetail &
+  MousePointsDetail;
 
 /**
  * EventDetail touchTap (successive taps which do not trigger touchstart)
@@ -325,6 +341,10 @@ type TouchPressEventDetail = NormalizedInteractionEventDetail & {
   startPointsList: ITouchPoints[];
   /** The last points of the touch. */
   lastPointsList: ITouchPoints[];
+  /** The starting points of the touch event. */
+  startPoints: ITouchPoints;
+  /** The last points of the touch. */
+  lastPoints: ITouchPoints;
 };
 
 /**
