@@ -130,9 +130,7 @@ class LengthTool extends AnnotationTool {
    *
    */
   addNewAnnotation = (
-    evt:
-      | EventTypes.MouseDownActivateEventType
-      | EventTypes.TouchStartActivateEventType
+    evt: EventTypes.InteractionEventType
   ): LengthAnnotation => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -256,9 +254,8 @@ class LengthTool extends AnnotationTool {
   };
 
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
-    annotation: LengthAnnotation,
-    interactionType: InteractionTypes
+    evt: EventTypes.InteractionEventType,
+    annotation: LengthAnnotation
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -289,10 +286,9 @@ class LengthTool extends AnnotationTool {
   };
 
   handleSelectedCallback(
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
+    evt: EventTypes.InteractionEventType,
     annotation: LengthAnnotation,
-    handle: ToolHandle,
-    interactionType = 'mouse'
+    handle: ToolHandle
   ): void {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -333,13 +329,7 @@ class LengthTool extends AnnotationTool {
     evt.preventDefault();
   }
 
-  _mouseUpCallback = (
-    evt:
-      | EventTypes.MouseUpEventType
-      | EventTypes.MouseClickEventType
-      | EventTypes.TouchTapEventType
-      | EventTypes.TouchEndEventType
-  ) => {
+  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
@@ -385,12 +375,7 @@ class LengthTool extends AnnotationTool {
     this.isDrawing = false;
   };
 
-  _mouseDragCallback = (
-    evt:
-      | EventTypes.MouseDragEventType
-      | EventTypes.MouseMoveEventType
-      | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
     const eventDetail = evt.detail;
     const { element } = eventDetail;

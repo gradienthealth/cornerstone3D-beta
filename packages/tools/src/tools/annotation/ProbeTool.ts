@@ -138,9 +138,7 @@ class ProbeTool extends AnnotationTool {
    *
    */
   addNewAnnotation = (
-    evt:
-      | EventTypes.MouseDownActivateEventType
-      | EventTypes.TouchStartActivateEventType
+    evt: EventTypes.InteractionEventType
   ): ProbeAnnotation => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -234,10 +232,8 @@ class ProbeTool extends AnnotationTool {
   }
 
   handleSelectedCallback(
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
-    annotation: ProbeAnnotation,
-    handle: ToolHandle,
-    interactionType = 'mouse'
+    evt: EventTypes.InteractionEventType,
+    annotation: ProbeAnnotation
   ): void {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -268,13 +264,7 @@ class ProbeTool extends AnnotationTool {
     evt.preventDefault();
   }
 
-  _mouseUpCallback = (
-    evt:
-      | EventTypes.MouseUpEventType
-      | EventTypes.MouseClickEventType
-      | EventTypes.TouchTapEventType
-      | EventTypes.TouchEndEventType
-  ) => {
+  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 

@@ -135,9 +135,7 @@ class RectangleROITool extends AnnotationTool {
    *
    */
   addNewAnnotation = (
-    evt:
-      | EventTypes.MouseDownActivateEventType
-      | EventTypes.TouchStartActivateEventType
+    evt: EventTypes.InteractionEventType
   ): RectangleROIAnnotation => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -266,9 +264,8 @@ class RectangleROITool extends AnnotationTool {
   };
 
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
-    annotation: RectangleROIAnnotation,
-    interactionType: InteractionTypes
+    evt: EventTypes.InteractionEventType,
+    annotation: RectangleROIAnnotation
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -299,10 +296,9 @@ class RectangleROITool extends AnnotationTool {
   };
 
   handleSelectedCallback = (
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchStartEventType,
+    evt: EventTypes.InteractionEventType,
     annotation: RectangleROIAnnotation,
-    handle: ToolHandle,
-    interactionType = 'mouse'
+    handle: ToolHandle
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -343,13 +339,7 @@ class RectangleROITool extends AnnotationTool {
     evt.preventDefault();
   };
 
-  _mouseUpCallback = (
-    evt:
-      | EventTypes.MouseUpEventType
-      | EventTypes.MouseClickEventType
-      | EventTypes.TouchTapEventType
-      | EventTypes.TouchEndEventType
-  ) => {
+  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
@@ -394,12 +384,7 @@ class RectangleROITool extends AnnotationTool {
     }
   };
 
-  _mouseDragCallback = (
-    evt:
-      | EventTypes.MouseMoveEventType
-      | EventTypes.MouseDragEventType
-      | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
 
     const eventDetail = evt.detail;

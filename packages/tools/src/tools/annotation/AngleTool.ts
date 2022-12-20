@@ -89,14 +89,12 @@ class AngleTool extends AnnotationTool {
    * Based on the current position of the mouse and the current imageId to create
    * a Length Annotation and stores it in the annotationManager
    *
-   * @param evt -  EventTypes.NormalizedMouseEventType
+   * @param evt -  EventTypes.InteractionEventType
    * @returns The annotation object.
    *
    */
   addNewAnnotation = (
-    evt:
-      | EventTypes.MouseDownActivateEventType
-      | EventTypes.TouchStartActivateEventType
+    evt: EventTypes.InteractionEventType
   ): AngleAnnotation => {
     if (this.angleStartedNotYetCompleted) {
       return;
@@ -105,6 +103,7 @@ class AngleTool extends AnnotationTool {
     this.angleStartedNotYetCompleted = true;
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
+
     const worldPos = currentPoints.world;
     const enabledElement = getEnabledElement(element);
     const { viewport, renderingEngine } = enabledElement;
@@ -243,9 +242,8 @@ class AngleTool extends AnnotationTool {
   };
 
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType,
-    annotation: AngleAnnotation,
-    interactionType: InteractionTypes
+    evt: EventTypes.InteractionEventType,
+    annotation: AngleAnnotation
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -276,10 +274,9 @@ class AngleTool extends AnnotationTool {
   };
 
   handleSelectedCallback(
-    evt: EventTypes.MouseDownEventType,
+    evt: EventTypes.InteractionEventType,
     annotation: AngleAnnotation,
-    handle: ToolHandle,
-    interactionType = 'mouse'
+    handle: ToolHandle
   ): void {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -320,13 +317,7 @@ class AngleTool extends AnnotationTool {
     evt.preventDefault();
   }
 
-  _mouseUpCallback = (
-    evt:
-      | EventTypes.MouseUpEventType
-      | EventTypes.MouseClickEventType
-      | EventTypes.TouchEndEventType
-      | EventTypes.TouchTapEventType
-  ) => {
+  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
@@ -381,12 +372,7 @@ class AngleTool extends AnnotationTool {
     this.isDrawing = false;
   };
 
-  _mouseDragCallback = (
-    evt:
-      | EventTypes.MouseDragEventType
-      | EventTypes.MouseMoveEventType
-      | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
     const eventDetail = evt.detail;
     const { element } = eventDetail;

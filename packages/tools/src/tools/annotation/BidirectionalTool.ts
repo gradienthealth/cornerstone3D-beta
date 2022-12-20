@@ -131,9 +131,7 @@ class BidirectionalTool extends AnnotationTool {
    *
    */
   addNewAnnotation(
-    evt:
-      | EventTypes.MouseDownActivateEventType
-      | EventTypes.TouchStartActivateEventType
+    evt: EventTypes.InteractionEventType
   ): BidirectionalAnnotation {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -298,9 +296,8 @@ class BidirectionalTool extends AnnotationTool {
    * @param interactionType - interaction type (mouse, touch)
    */
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchEndEventType,
-    annotation: BidirectionalAnnotation,
-    interactionType: InteractionTypes
+    evt: EventTypes.InteractionEventType,
+    annotation: BidirectionalAnnotation
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -340,10 +337,9 @@ class BidirectionalTool extends AnnotationTool {
    * @param interactionType - interaction type (mouse, touch)
    */
   handleSelectedCallback = (
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchEndEventType,
+    evt: EventTypes.InteractionEventType,
     annotation: BidirectionalAnnotation,
-    handle: ToolHandle,
-    interactionType = 'mouse'
+    handle: ToolHandle
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -392,13 +388,7 @@ class BidirectionalTool extends AnnotationTool {
    *
    * @param evt - mouse up or mouse click event types
    */
-  _mouseUpCallback = (
-    evt:
-      | EventTypes.MouseUpEventType
-      | EventTypes.MouseClickEventType
-      | EventTypes.TouchTapEventType
-      | EventTypes.TouchEndEventType
-  ) => {
+  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
@@ -506,9 +496,7 @@ class BidirectionalTool extends AnnotationTool {
   /**
    * @param evt - mouse move event type or mouse drag
    */
-  _mouseDragDrawCallback = (
-    evt: MouseMoveEventType | MouseDragEventType | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragDrawCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
 
     const eventDetail = evt.detail;
@@ -591,9 +579,7 @@ class BidirectionalTool extends AnnotationTool {
    * Mouse drag to edit annotation callback
    * @param evt - mouse drag event
    */
-  _mouseDragModifyCallback = (
-    evt: MouseDragEventType | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragModifyCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
 
     const eventDetail = evt.detail;
@@ -639,9 +625,7 @@ class BidirectionalTool extends AnnotationTool {
    * Mouse dragging a handle callback
    * @param evt - mouse drag event
    */
-  _mouseDragModifyHandle = (
-    evt: MouseDragEventType | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragModifyHandle = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
     const enabledElement = getEnabledElement(element);

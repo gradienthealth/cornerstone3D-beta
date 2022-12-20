@@ -86,9 +86,7 @@ class ArrowAnnotateTool extends AnnotationTool {
    *
    */
   addNewAnnotation = (
-    evt:
-      | EventTypes.MouseDownActivateEventType
-      | EventTypes.TouchStartActivateEventType
+    evt: EventTypes.InteractionEventType
   ): ArrowAnnotation => {
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
@@ -215,9 +213,8 @@ class ArrowAnnotateTool extends AnnotationTool {
   };
 
   toolSelectedCallback = (
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchEndEventType,
-    annotation: ArrowAnnotation,
-    interactionType: InteractionTypes
+    evt: EventTypes.InteractionEventType,
+    annotation: ArrowAnnotation
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -248,10 +245,9 @@ class ArrowAnnotateTool extends AnnotationTool {
   };
 
   handleSelectedCallback(
-    evt: EventTypes.MouseDownEventType | EventTypes.TouchEndEventType,
+    evt: EventTypes.InteractionEventType,
     annotation: ArrowAnnotation,
-    handle: ToolHandle,
-    interactionType = 'mouse'
+    handle: ToolHandle
   ): void {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -292,13 +288,7 @@ class ArrowAnnotateTool extends AnnotationTool {
     evt.preventDefault();
   }
 
-  _mouseUpCallback = (
-    evt:
-      | EventTypes.MouseUpEventType
-      | EventTypes.MouseClickEventType
-      | EventTypes.TouchTapEventType
-      | EventTypes.TouchEndEventType
-  ) => {
+  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
@@ -361,12 +351,7 @@ class ArrowAnnotateTool extends AnnotationTool {
     this.isDrawing = false;
   };
 
-  _mouseDragCallback = (
-    evt:
-      | EventTypes.MouseDragEventType
-      | EventTypes.MouseMoveEventType
-      | EventTypes.TouchDragEventType
-  ) => {
+  _mouseDragCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -424,12 +409,9 @@ class ArrowAnnotateTool extends AnnotationTool {
     }
   };
 
-  doubleClickCallback = (evt: EventTypes.MouseUpEventType) => {
+  doubleClickCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
-
-    const { viewportId, renderingEngineId, renderingEngine } =
-      getEnabledElement(element);
 
     let annotations = getAnnotations(element, this.getToolName());
 
@@ -463,7 +445,7 @@ class ArrowAnnotateTool extends AnnotationTool {
     this.isDrawing = false;
   };
 
-  _doneChangingTextCallback(element, annotation, updatedText) {
+  _doneChangingTextCallback(element, annotation, updatedText): void {
     annotation.data.text = updatedText;
 
     const { renderingEngine, viewportId, renderingEngineId } =

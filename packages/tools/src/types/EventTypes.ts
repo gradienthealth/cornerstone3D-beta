@@ -47,7 +47,15 @@ type TouchPointsDetail = {
   lastPointsList: ITouchPoints[];
   /** The current touch position. */
   currentPointsList: ITouchPoints[];
+
+  /** The difference between the current and last points. */
+  deltaPoints: IPoints;
+  /** The difference between distances between the current and last points. */
+  deltaDistance: IDistance;
 };
+
+type InteractionEventDetail = NormalizedInteractionEventDetail &
+  (MousePointsDetail | TouchPointsDetail);
 
 /**
  * The data that is passed to the event handler when a new annotation is added
@@ -227,13 +235,7 @@ type MouseDownEventDetail = NormalizedInteractionEventDetail &
  * EventDetail for touchstart event
  */
 type TouchStartEventDetail = NormalizedInteractionEventDetail &
-  TouchPointsDetail & {
-    /** The difference between the current and last points. */
-    deltaPoints: IPoints;
-    /** The difference between distances between the current and last points. */
-    deltaDistance: IDistance;
-  };
-
+  TouchPointsDetail;
 /**
  * EventDetail for mouseDrag event
  */
@@ -247,12 +249,7 @@ type MouseDragEventDetail = NormalizedInteractionEventDetail &
  * EventDetail for touch drag event
  */
 type TouchDragEventDetail = NormalizedInteractionEventDetail &
-  TouchPointsDetail & {
-    /** The difference between the current and last points. */
-    deltaPoints: IPoints;
-    /** The difference between distances between the current and last points. */
-    deltaDistance: IDistance;
-  };
+  TouchPointsDetail;
 
 /**
  * EventDetail mouseMove event
@@ -274,13 +271,7 @@ type MouseUpEventDetail = NormalizedInteractionEventDetail &
 /**
  * EventDetail for touch end event
  */
-type TouchEndEventDetail = NormalizedInteractionEventDetail &
-  TouchPointsDetail & {
-    /** The difference between the current and last points. */
-    deltaPoints: IPoints;
-    /** The difference between distances between the current and last points. */
-    deltaDistance: IDistance;
-  };
+type TouchEndEventDetail = NormalizedInteractionEventDetail & TouchPointsDetail;
 
 /**
  * EventDetail for mouseDown Activate, it is triggered when mouseDown event is fired
@@ -297,12 +288,7 @@ type MouseDownActivateEventDetail = NormalizedInteractionEventDetail &
  * but stopPropagation is not called, used for creating new annotation
  */
 type TouchStartActivateEventDetail = NormalizedInteractionEventDetail &
-  TouchPointsDetail & {
-    /** The difference between the current and last points. */
-    deltaPoints: IPoints;
-    /** The difference between distances between the current and last points. */
-    deltaDistance: IDistance;
-  };
+  TouchPointsDetail;
 
 /**
  * EventDetail mouseClick (a mouse down which is followed by a mouse up)
@@ -505,6 +491,11 @@ type TouchPressEventType = Types.CustomEventType<TouchPressEventDetail>;
 type TouchStartEventType = Types.CustomEventType<TouchStartEventDetail>;
 
 /**
+ * Event for interaction
+ */
+type InteractionEventType = Types.CustomEventType<InteractionEventDetail>;
+
+/**
  * Event for mouse down event
  */
 type MouseDownActivateEventType =
@@ -558,6 +549,7 @@ type MouseDoubleClickEventType =
 type MouseWheelEventType = Types.CustomEventType<MouseWheelEventDetail>;
 
 export {
+  InteractionEventType,
   NormalizedInteractionEventDetail,
   NormalizedMouseEventType,
   NormalizedTouchEventType,
