@@ -406,7 +406,7 @@ class EllipticalROITool extends AnnotationTool {
     evt.preventDefault();
   };
 
-  _mouseUpCallback = (evt: EventTypes.InteractionEventType): void => {
+  _endCallback = (evt: EventTypes.InteractionEventType): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
@@ -456,7 +456,7 @@ class EllipticalROITool extends AnnotationTool {
     }
   };
 
-  _mouseDragDrawCallback = (evt: EventTypes.InteractionEventType): void => {
+  _dragDrawCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -493,7 +493,7 @@ class EllipticalROITool extends AnnotationTool {
     triggerAnnotationRenderForViewportIds(renderingEngine, viewportIdsToRender);
   };
 
-  _mouseDragModifyCallback = (evt: EventTypes.InteractionEventType): void => {
+  _dragModifyCallback = (evt: EventTypes.InteractionEventType): void => {
     this.isDrawing = true;
     const eventDetail = evt.detail;
     const { element } = eventDetail;
@@ -660,57 +660,51 @@ class EllipticalROITool extends AnnotationTool {
   _activateModify = (element) => {
     state.isInteractingWithTool = true;
 
-    element.addEventListener(Events.MOUSE_UP, this._mouseUpCallback);
-    element.addEventListener(Events.MOUSE_DRAG, this._mouseDragModifyCallback);
-    element.addEventListener(Events.MOUSE_CLICK, this._mouseUpCallback);
+    element.addEventListener(Events.MOUSE_UP, this._endCallback);
+    element.addEventListener(Events.MOUSE_DRAG, this._dragModifyCallback);
+    element.addEventListener(Events.MOUSE_CLICK, this._endCallback);
 
-    element.addEventListener(Events.TOUCH_END, this._mouseUpCallback);
-    element.addEventListener(Events.TOUCH_DRAG, this._mouseDragModifyCallback);
-    element.addEventListener(Events.TOUCH_TAP, this._mouseUpCallback);
+    element.addEventListener(Events.TOUCH_END, this._endCallback);
+    element.addEventListener(Events.TOUCH_DRAG, this._dragModifyCallback);
+    element.addEventListener(Events.TOUCH_TAP, this._endCallback);
   };
 
   _deactivateModify = (element) => {
     state.isInteractingWithTool = false;
 
-    element.removeEventListener(Events.MOUSE_UP, this._mouseUpCallback);
-    element.removeEventListener(
-      Events.MOUSE_DRAG,
-      this._mouseDragModifyCallback
-    );
-    element.removeEventListener(Events.MOUSE_CLICK, this._mouseUpCallback);
+    element.removeEventListener(Events.MOUSE_UP, this._endCallback);
+    element.removeEventListener(Events.MOUSE_DRAG, this._dragModifyCallback);
+    element.removeEventListener(Events.MOUSE_CLICK, this._endCallback);
 
-    element.removeEventListener(Events.TOUCH_END, this._mouseUpCallback);
-    element.removeEventListener(
-      Events.TOUCH_DRAG,
-      this._mouseDragModifyCallback
-    );
-    element.removeEventListener(Events.TOUCH_TAP, this._mouseUpCallback);
+    element.removeEventListener(Events.TOUCH_END, this._endCallback);
+    element.removeEventListener(Events.TOUCH_DRAG, this._dragModifyCallback);
+    element.removeEventListener(Events.TOUCH_TAP, this._endCallback);
   };
 
   _activateDraw = (element) => {
     state.isInteractingWithTool = true;
 
-    element.addEventListener(Events.MOUSE_UP, this._mouseUpCallback);
-    element.addEventListener(Events.MOUSE_DRAG, this._mouseDragDrawCallback);
-    element.addEventListener(Events.MOUSE_MOVE, this._mouseDragDrawCallback);
-    element.addEventListener(Events.MOUSE_CLICK, this._mouseUpCallback);
+    element.addEventListener(Events.MOUSE_UP, this._endCallback);
+    element.addEventListener(Events.MOUSE_DRAG, this._dragDrawCallback);
+    element.addEventListener(Events.MOUSE_MOVE, this._dragDrawCallback);
+    element.addEventListener(Events.MOUSE_CLICK, this._endCallback);
 
-    element.addEventListener(Events.TOUCH_END, this._mouseUpCallback);
-    element.addEventListener(Events.TOUCH_DRAG, this._mouseDragDrawCallback);
-    element.addEventListener(Events.TOUCH_TAP, this._mouseUpCallback);
+    element.addEventListener(Events.TOUCH_END, this._endCallback);
+    element.addEventListener(Events.TOUCH_DRAG, this._dragDrawCallback);
+    element.addEventListener(Events.TOUCH_TAP, this._endCallback);
   };
 
   _deactivateDraw = (element) => {
     state.isInteractingWithTool = false;
 
-    element.removeEventListener(Events.MOUSE_UP, this._mouseUpCallback);
-    element.removeEventListener(Events.MOUSE_DRAG, this._mouseDragDrawCallback);
-    element.removeEventListener(Events.MOUSE_MOVE, this._mouseDragDrawCallback);
-    element.removeEventListener(Events.MOUSE_CLICK, this._mouseUpCallback);
+    element.removeEventListener(Events.MOUSE_UP, this._endCallback);
+    element.removeEventListener(Events.MOUSE_DRAG, this._dragDrawCallback);
+    element.removeEventListener(Events.MOUSE_MOVE, this._dragDrawCallback);
+    element.removeEventListener(Events.MOUSE_CLICK, this._endCallback);
 
-    element.removeEventListener(Events.TOUCH_END, this._mouseUpCallback);
-    element.removeEventListener(Events.TOUCH_DRAG, this._mouseDragDrawCallback);
-    element.removeEventListener(Events.TOUCH_TAP, this._mouseUpCallback);
+    element.removeEventListener(Events.TOUCH_END, this._endCallback);
+    element.removeEventListener(Events.TOUCH_DRAG, this._dragDrawCallback);
+    element.removeEventListener(Events.TOUCH_TAP, this._endCallback);
   };
 
   /**

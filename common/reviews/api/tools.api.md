@@ -138,9 +138,9 @@ export class AngleTool extends AnnotationTool {
     // (undocumented)
     mouseDragCallback: any;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseDragEventType | EventTypes_2.MouseMoveEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseDragEventType | EventTypes_2.MouseMoveEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchEndEventType | EventTypes_2.TouchTapEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchEndEventType | EventTypes_2.TouchTapEventType) => void;
     // (undocumented)
     renderAnnotation: (enabledElement: Types_2.IEnabledElement, svgDrawingHelper: SVGDrawingHelper) => boolean;
     // (undocumented)
@@ -380,9 +380,9 @@ export class ArrowAnnotateTool extends AnnotationTool {
     // (undocumented)
     mouseDragCallback: any;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseDragEventType | EventTypes_2.MouseMoveEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseDragEventType | EventTypes_2.MouseMoveEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
     // (undocumented)
     renderAnnotation: (enabledElement: Types_2.IEnabledElement, svgDrawingHelper: SVGDrawingHelper) => boolean;
     // (undocumented)
@@ -519,13 +519,13 @@ export class BidirectionalTool extends AnnotationTool {
     // (undocumented)
     mouseDragCallback: any;
     // (undocumented)
-    _mouseDragDrawCallback: (evt: MouseMoveEventType | MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragDrawCallback: (evt: MouseMoveEventType | MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseDragModifyCallback: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragModifyCallback: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseDragModifyHandle: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragModifyHandle: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
     // (undocumented)
     _movingLongAxisWouldPutItThroughShortAxis: (proposedFirstLineSegment: any, secondLineSegment: any) => boolean;
     // (undocumented)
@@ -637,9 +637,9 @@ export class CircleScissorsTool extends BaseTool {
     // (undocumented)
     isHandleOutsideImage: boolean;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType) => void;
     // (undocumented)
     preMouseDownCallback: (evt: EventTypes_2.MouseDownActivateEventType) => boolean;
     // (undocumented)
@@ -1086,11 +1086,11 @@ export class CrosshairsTool extends AnnotationTool {
     // (undocumented)
     _jump: (enabledElement: any, jumpWorld: any) => boolean;
     // (undocumented)
-    _mouseDragCallback: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragCallback: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
     mouseMoveCallback: (evt: EventTypes_2.MouseMoveEventType, filteredToolAnnotations: Annotations) => boolean;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchEndEventType | EventTypes_2.TouchTapEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchEndEventType | EventTypes_2.TouchTapEventType) => void;
     // (undocumented)
     onCameraModified: (evt: any) => void;
     // (undocumented)
@@ -1443,11 +1443,11 @@ export class EllipticalROITool extends AnnotationTool {
     // (undocumented)
     mouseDragCallback: any;
     // (undocumented)
-    _mouseDragDrawCallback: (evt: MouseMoveEventType | MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragDrawCallback: (evt: MouseMoveEventType | MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseDragModifyCallback: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragModifyCallback: (evt: MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
     // (undocumented)
     _pointInEllipseCanvas(ellipse: any, location: Types_2.Point2): boolean;
     // (undocumented)
@@ -2813,9 +2813,9 @@ export class LengthTool extends AnnotationTool {
     // (undocumented)
     mouseDragCallback: any;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseDragEventType | EventTypes_2.MouseMoveEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseDragEventType | EventTypes_2.MouseMoveEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
     // (undocumented)
     renderAnnotation: (enabledElement: Types_2.IEnabledElement, svgDrawingHelper: SVGDrawingHelper) => boolean;
     // (undocumented)
@@ -3314,9 +3314,9 @@ export class ProbeTool extends AnnotationTool {
     // (undocumented)
     mouseDragCallback: any;
     // (undocumented)
-    _mouseDragCallback: (evt: any) => void;
+    _dragCallback: (evt: any) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
     // (undocumented)
     renderAnnotation: (enabledElement: Types_2.IEnabledElement, svgDrawingHelper: SVGDrawingHelper) => boolean;
     // (undocumented)
@@ -3597,9 +3597,9 @@ export class RectangleROITool extends AnnotationTool {
     // (undocumented)
     isPointNearTool: (element: HTMLDivElement, annotation: RectangleROIAnnotation, canvasCoords: Types_2.Point2, proximity: number) => boolean;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseMoveEventType | EventTypes_2.MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseMoveEventType | EventTypes_2.MouseDragEventType | EventTypes_2.TouchDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType | EventTypes_2.TouchTapEventType | EventTypes_2.TouchEndEventType) => void;
     // (undocumented)
     renderAnnotation: (enabledElement: Types_2.IEnabledElement, svgDrawingHelper: SVGDrawingHelper) => boolean;
     // (undocumented)
@@ -3642,9 +3642,9 @@ export class RectangleScissorsTool extends BaseTool {
     // (undocumented)
     isHandleOutsideImage: boolean;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType) => void;
     // (undocumented)
     preMouseDownCallback: (evt: EventTypes_2.MouseDownActivateEventType) => boolean;
     // (undocumented)
@@ -4090,9 +4090,9 @@ export class SphereScissorsTool extends BaseTool {
     // (undocumented)
     isHandleOutsideImage: boolean;
     // (undocumented)
-    _mouseDragCallback: (evt: EventTypes_2.MouseDragEventType) => void;
+    _dragCallback: (evt: EventTypes_2.MouseDragEventType) => void;
     // (undocumented)
-    _mouseUpCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType) => void;
+    _endCallback: (evt: EventTypes_2.MouseUpEventType | EventTypes_2.MouseClickEventType) => void;
     // (undocumented)
     preMouseDownCallback: (evt: EventTypes_2.MouseDownActivateEventType) => true;
     // (undocumented)

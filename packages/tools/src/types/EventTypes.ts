@@ -57,6 +57,10 @@ type TouchPointsDetail = {
 type InteractionEventDetail = NormalizedInteractionEventDetail &
   (MousePointsDetail | TouchPointsDetail);
 
+type InteractionStartEventDetail = InteractionEventDetail;
+
+type InteractionEndEventDetail = InteractionEventDetail;
+
 /**
  * The data that is passed to the event handler when a new annotation is added
  * to the annotations.
@@ -496,6 +500,16 @@ type TouchStartEventType = Types.CustomEventType<TouchStartEventDetail>;
 type InteractionEventType = Types.CustomEventType<InteractionEventDetail>;
 
 /**
+ * Event for interaction start
+ */
+type InteractionStartType = Types.CustomEventType<InteractionStartEventDetail>;
+
+/**
+ * Event for interaction end
+ */
+type InteractionEndType = Types.CustomEventType<InteractionEndEventDetail>;
+
+/**
  * Event for mouse down event
  */
 type MouseDownActivateEventType =
@@ -549,6 +563,8 @@ type MouseDoubleClickEventType =
 type MouseWheelEventType = Types.CustomEventType<MouseWheelEventDetail>;
 
 export {
+  InteractionStartType,
+  InteractionEndType,
   InteractionEventType,
   NormalizedInteractionEventDetail,
   NormalizedMouseEventType,
