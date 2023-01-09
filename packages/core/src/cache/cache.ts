@@ -553,7 +553,6 @@ class Cache implements ICache {
           );
           return;
         }
-
         if (volume.sizeInBytes === undefined) {
           throw new Error(
             'putVolumeLoadObject: volume.sizeInBytes must not be undefined'
@@ -570,7 +569,6 @@ class Cache implements ICache {
 
         this.decacheIfNecessaryUntilBytesAvailable(
           volume.sizeInBytes,
-          // @ts-ignore: // todo ImageVolume does not have imageIds
           volume.imageIds
         );
 

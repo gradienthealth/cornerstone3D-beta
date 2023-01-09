@@ -253,6 +253,9 @@ export default class StreamingImageVolume extends ImageVolume {
     ) => {
       // Check if there is a cached image for the same imageURI (different
       // data loader scheme)
+      // this check already happens during the imageLoader.loadImage(imageId, options)
+      // why do we need to check for existence if it is a different uri here?
+      // since the volume data is not set this seems buggy...
       const cachedImage = cache.getCachedImageBasedOnImageURI(imageId);
 
       // check if we are still loading the volume and we have not canceled loading
@@ -414,6 +417,15 @@ export default class StreamingImageVolume extends ImageVolume {
 
       const options = {
         // WADO Image Loader
+        // TODO: ouwen add a non shared array buffer mode
+        // currently a giant empty arrayBuffer is passed into the worker
+        // the target buffer is then written to and returned?
+        // instead the sharedArrayBuffer needs to be checked
+        // in the case it is not a shared array buffer, we should
+        // simply have the decoder decode the imagePixel data and copy to the
+        // targetBuffer.arrayBuffer. The imagePixel data can then refer to the copied
+        // view if needed.
+
         targetBuffer: {
           arrayBuffer,
           offset: imageIdIndex * lengthInBytes,

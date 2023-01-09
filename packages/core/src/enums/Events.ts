@@ -183,6 +183,11 @@ enum Events {
    */
   STACK_VIEWPORT_SCROLL = 'CORNERSTONE_STACK_VIEWPORT_SCROLL',
 
+  /**
+   * Triggers when the scroll function is called with a delta that is out of bounds.
+   * This is usually for signaling that the user may want a different volume for partially loaded volumes which is meant to optimize memory.
+   */
+  VOLUME_SCROLL_OUT_OF_BOUNDS = 'CORNERSTONE_VOLUME_SCROLL_OUT_OF_BOUNDS',
   // IMAGE_CACHE_FULL = 'CORNERSTONE_IMAGE_CACHE_FULL',
   // PRE_RENDER = 'CORNERSTONE_PRE_RENDER',
   // ELEMENT_RESIZED = 'CORNERSTONE_ELEMENT_RESIZED',
