@@ -17,7 +17,7 @@ interface IImageVolume {
   /** volume origin - set to the imagePositionPatient of the last image in the volume */
   origin: Point3;
   /** volume scalar data */
-  scalarData: any;
+  scalarData: Uint8Array | Uint16Array | Float32Array | Int16Array;
   /** Whether preScaling has been performed on the volume */
   isPrescaled: boolean;
   /** volume scaling metadata */
