@@ -6,6 +6,8 @@ import vtkCamera from '@kitware/vtk.js/Rendering/Core/Camera';
 import { vec2, vec3, mat4 } from 'gl-matrix';
 import vtkImageMapper from '@kitware/vtk.js/Rendering/Core/ImageMapper';
 import vtkImageSlice from '@kitware/vtk.js/Rendering/Core/ImageSlice';
+import vtkColorTransferFunction from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction';
+import { getConfiguration } from '../init';
 import * as metaData from '../metaData';
 import Viewport from './Viewport';
 import eventTarget from '../eventTarget';
@@ -77,7 +79,7 @@ interface ImagePixelModule {
   samplesPerPixel: number;
   highBit: number;
   photometricInterpretation: string;
-  pixelRepresentation: string;
+  pixelRepresentation: number;
   windowWidth: number;
   windowCenter: number;
   voiLUTFunction: VOILUTFunctionType;
@@ -1310,15 +1312,27 @@ class StackViewport extends Viewport implements IStackViewport {
     bitsAllocated,
     numComps,
     numVoxels,
+    isSigned,
   }): void {
     let pixelArray;
+    const { hasNorm16TextureSupport, preferSizeOverAccuracy } =
+      getConfiguration().rendering;
+    const use16BitDataType = hasNorm16TextureSupport || preferSizeOverAccuracy;
+
     switch (bitsAllocated) {
       case 8:
         pixelArray = new Uint8Array(numVoxels * numComps);
         break;
-
       case 16:
-        pixelArray = new Float32Array(numVoxels * numComps);
+        if (use16BitDataType) {
+          if (isSigned) {
+            pixelArray = new Int16Array(numVoxels * numComps);
+          } else {
+            pixelArray = new Uint16Array(numVoxels * numComps);
+          }
+        } else {
+          pixelArray = new Float32Array(numVoxels * numComps);
+        }
 
         break;
       case 24:
@@ -1405,13 +1419,13 @@ class StackViewport extends Viewport implements IStackViewport {
     if (!imageData) {
       return false;
     }
-
     const [xSpacing, ySpacing] = imageData.getSpacing();
     const [xVoxels, yVoxels] = imageData.getDimensions();
     const imagePlaneModule = this._getImagePlaneModule(image.imageId);
     const direction = imageData.getDirection();
     const rowCosines = direction.slice(0, 3);
     const columnCosines = direction.slice(3, 6);
+    const dataType = imageData.getPointData().getScalars().getDataType();
 
     // using spacing, size, and direction only for now
     return (
@@ -1422,7 +1436,8 @@ class StackViewport extends Viewport implements IStackViewport {
       xVoxels === image.columns &&
       yVoxels === image.rows &&
       isEqual(imagePlaneModule.rowCosines, <Point3>rowCosines) &&
-      isEqual(imagePlaneModule.columnCosines, <Point3>columnCosines)
+      isEqual(imagePlaneModule.columnCosines, <Point3>columnCosines) &&
+      dataType === image.getPixelData().constructor.name
     );
   }
 
@@ -1446,7 +1461,11 @@ class StackViewport extends Viewport implements IStackViewport {
     //    from the loaded Cornerstone image
     const pixelData = image.getPixelData();
     const scalars = this._imageData.getPointData().getScalars();
-    const scalarData = scalars.getData() as Uint8Array | Float32Array;
+    const scalarData = scalars.getData() as
+      | Uint8Array
+      | Float32Array
+      | Uint16Array
+      | Int16Array;
 
     if (image.rgba || isRgbaSourceRgbDest(pixelData, scalarData)) {
       if (!image.rgba) {
@@ -1607,19 +1626,10 @@ class StackViewport extends Viewport implements IStackViewport {
         );
       }
 
-      // Todo: Note that eventually all viewport data is converted into Float32Array,
-      // we use it here for the purpose of scaling for now.
-      const type = 'Float32Array';
-
       const priority = -5;
       const requestType = RequestType.Interaction;
       const additionalDetails = { imageId };
       const options = {
-        targetBuffer: {
-          type,
-          offset: null,
-          length: null,
-        },
         preScale: {
           enabled: true,
         },
@@ -1693,20 +1703,16 @@ class StackViewport extends Viewport implements IStackViewport {
         );
       }
 
-      // Todo: Note that eventually all viewport data is converted into Float32Array,
-      // we use it here for the purpose of scaling for now.
-      const type = 'Float32Array';
-
+      /**
+       * CSWIL will automatically choose the array type when no targetBuffer
+       * is provided. When CSWIL is initialized, the use16bit should match
+       * the settings of cornerstone3D (either preferSizeOverAccuracy or norm16
+       * textures need to be enabled)
+       */
       const priority = -5;
       const requestType = RequestType.Interaction;
       const additionalDetails = { imageId };
-
       const options = {
-        targetBuffer: {
-          type,
-          offset: null,
-          length: null,
-        },
         preScale: {
           enabled: true,
         },
@@ -1822,6 +1828,12 @@ class StackViewport extends Viewport implements IStackViewport {
 
     // 3b. If we cannot reuse the vtkImageData object (either the first render
     // or the size has changed), create a new one
+
+    // TODO: maybe better to just use the image.pixeldata type
+    const isSigned =
+      imagePixelModule.pixelRepresentation === 1 ||
+      (image.preScale?.scaled &&
+        image.getPixelData().constructor.name === 'Int16Array');
     this._createVTKImageData({
       origin,
       direction,
@@ -1830,6 +1842,7 @@ class StackViewport extends Viewport implements IStackViewport {
       bitsAllocated,
       numComps,
       numVoxels,
+      isSigned,
     });
 
     // Set the scalar data of the vtkImageData object from the Cornerstone

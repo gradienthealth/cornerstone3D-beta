@@ -30,7 +30,8 @@ function createMergedLabelmapForIndex(
 
   const labelmap = labelmaps[0];
 
-  const arrayType = labelmap.scalarData.constructor;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const arrayType: any = labelmap.scalarData.constructor;
   const outputData = new arrayType(labelmap.scalarData.length);
 
   labelmaps.forEach((labelmap) => {

@@ -794,6 +794,33 @@ function copyPoints(points: ITouchPoints): ITouchPoints;
 function copyPointsList(points: ITouchPoints[]): ITouchPoints[];
 
 // @public (undocumented)
+type Cornerstone3DConfig = {
+    rendering: {
+        // vtk.js supports 8bit integer textures and 32bit float textures.
+        // However, if the client has norm16 textures (it can be seen by visiting
+        // the webGl report at https://webglreport.com/?v=2), vtk will be default
+        // to use it to improve memory usage. However, if the client don't have
+        // it still another level of optimization can happen by setting the
+        // preferSizeOverAccuracy since it will reduce the size of the texture to half
+        // float at the cost of accuracy in rendering. This is a tradeoff that the
+        // client can decide.
+        //
+        // Read more in the following Pull Request:
+        // 1. HalfFloat: https://github.com/Kitware/vtk-js/pull/2046
+        // 2. Norm16: https://github.com/Kitware/vtk-js/pull/2058
+        preferSizeOverAccuracy: boolean;
+        // Whether the EXT_texture_norm16 extension is supported by the browser.
+        // WebGL 2 report (link: https://webglreport.com/?v=2) can be used to check
+        // if the browser supports this extension.
+        // In case the browser supports this extension, instead of using 32bit float
+        // textures, 16bit float textures will be used to reduce the memory usage where
+        // possible.
+        hasNorm16TextureSupport: boolean;
+        useCPURendering: boolean;
+    };
+};
+
+// @public (undocumented)
 const CORNERSTONE_COLOR_LUT: number[][];
 
 // @public (undocumented)
@@ -1077,9 +1104,9 @@ function createLabelmapVolumeForViewport(input: {
     segmentationId?: string;
     options?: {
         volumeId?: string;
-        scalarData?: Float32Array | Uint8Array;
+        scalarData?: Float32Array | Uint8Array | Uint16Array | Int16Array;
         targetBuffer?: {
-            type: 'Float32Array' | 'Uint8Array';
+            type: 'Float32Array' | 'Uint8Array' | 'Uint16Array' | 'Int8Array';
         };
         metadata?: any;
         dimensions?: Types_2.Point3;
@@ -1283,9 +1310,6 @@ function debounce(func: Function, wait?: number, options?: {
     maxWait?: number;
     trailing?: boolean;
 }): Function;
-
-// @public (undocumented)
-function deepmerge(target?: {}, source?: {}, optionsArgument?: any): any;
 
 // @public (undocumented)
 const _default: {
@@ -2322,7 +2346,7 @@ interface IImageData {
             suvbw?: number;
         };
     };
-    scalarData: Float32Array;
+    scalarData: Float32Array | Uint16Array | Uint8Array | Int16Array;
     scaling?: Scaling;
     spacing: Point3;
 }
@@ -2353,7 +2377,7 @@ interface IImageVolume {
     numVoxels: number;
     origin: Point3;
     referencedVolumeId?: string;
-    scalarData: any;
+    scalarData: Uint8Array | Uint16Array | Float32Array | Int16Array;
     scaling?: {
         PET?: {
             SUVlbmFactor?: number;
@@ -2815,7 +2839,7 @@ interface IVolume {
     metadata: Metadata;
     origin: Point3;
     referencedVolumeId?: string;
-    scalarData: Float32Array | Uint8Array;
+    scalarData: Float32Array | Uint8Array | Uint16Array | Int16Array;
     scaling?: {
         PET?: {
             // @TODO: Do these values exist?
@@ -5043,7 +5067,6 @@ declare namespace utilities {
         viewportFilters,
         drawing_2 as drawing,
         debounce,
-        deepmerge as deepMerge,
         throttle,
         orientation_2 as orientation,
         isObject,

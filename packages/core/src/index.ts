@@ -35,6 +35,10 @@ import {
   setUseSharedArrayBuffer,
   resetUseCPURendering,
   resetUseSharedArrayBuffer,
+  setPreferSizeOverAccuracy,
+  getConfiguration,
+  hasNorm16TextureSupport,
+  hasActiveWebGLContext,
 } from './init';
 
 // Classes
@@ -58,8 +62,14 @@ import {
 export type { Types };
 
 export {
+  // init
   init,
+  hasNorm16TextureSupport,
+  hasActiveWebGLContext,
   isCornerstoneInitialized,
+  // configs
+  getConfiguration,
+  setPreferSizeOverAccuracy,
   // enums
   Enums,
   CONSTANTS,

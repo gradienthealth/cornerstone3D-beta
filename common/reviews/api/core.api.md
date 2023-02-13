@@ -179,6 +179,15 @@ enum ContourType {
 }
 
 // @public (undocumented)
+type Cornerstone3DConfig = {
+    rendering: {
+        preferSizeOverAccuracy: boolean;
+        hasNorm16TextureSupport: boolean;
+        useCPURendering: boolean;
+    };
+};
+
+// @public (undocumented)
 interface CPUFallbackColormap {
     // (undocumented)
     addColor: (rgba: Point4) => void;
@@ -465,6 +474,9 @@ function createAndCacheVolume(volumeId: string, options: VolumeLoaderOptions): P
 function createFloat32SharedArray(length: number): Float32Array;
 
 // @public (undocumented)
+function createInt16SharedArray(length: number): Int16Array;
+
+// @public (undocumented)
 function createLinearRGBTransferFunction(voiRange: VOIRange): vtkColorTransferFunction;
 
 // @public (undocumented)
@@ -472,6 +484,9 @@ function createLocalVolume(options: LocalVolumeOptions, volumeId: string, preven
 
 // @public (undocumented)
 function createSigmoidRGBTransferFunction(voiRange: VOIRange, approximationNodes?: number): vtkColorTransferFunction;
+
+// @public (undocumented)
+function createUint16SharedArray(length: number): Uint16Array;
 
 // @public (undocumented)
 function createUint8SharedArray(length: number): Uint8Array;
@@ -489,6 +504,9 @@ interface CustomEvent_2<T = any> extends Event {
     // (undocumented)
     initCustomEvent(typeArg: string, canBubbleArg: boolean, cancelableArg: boolean, detailArg: T): void;
 }
+
+// @public (undocumented)
+const deepMerge: (target?: {}, source?: {}, optionsArgument?: any) => any;
 
 // @public (undocumented)
 type DisplayArea = {
@@ -682,6 +700,9 @@ function getClosestImageId(imageVolume: IImageVolume, worldPos: Point3, viewPlan
 function getClosestStackImageIndexForPoint(point: Point3, viewport: IStackViewport): number | null;
 
 // @public (undocumented)
+export function getConfiguration(): Cornerstone3DConfig;
+
+// @public (undocumented)
 export function getEnabledElement(element: HTMLDivElement | undefined): IEnabledElement | undefined;
 
 // @public (undocumented)
@@ -713,6 +734,12 @@ export function getRenderingEngines(): IRenderingEngine[] | undefined;
 
 // @public (undocumented)
 function getRuntimeId(context?: unknown, separator?: string, max?: number): string;
+
+// @public (undocumented)
+function getScalarDataType(scalingParameters: ScalingParameters, scalarData?: any): string;
+
+// @public (undocumented)
+function getScalingParameters(imageId: string): ScalingParameters;
 
 // @public (undocumented)
 export function getShouldUseCPURendering(): boolean;
@@ -751,7 +778,13 @@ function getVolumeActorCorners(volumeActor: any): Array<Point3>;
 function getVolumeViewportsContainingSameVolumes(targetViewport: IVolumeViewport, renderingEngineId?: string): Array<IVolumeViewport>;
 
 // @public (undocumented)
+export function hasActiveWebGLContext(): boolean;
+
+// @public (undocumented)
 function hasNaNValues(input: number[] | number): boolean;
+
+// @public (undocumented)
+export function hasNorm16TextureSupport(): boolean;
 
 // @public (undocumented)
 interface ICache {
@@ -1063,7 +1096,7 @@ interface IImageData {
         };
     };
     // (undocumented)
-    scalarData: Float32Array;
+    scalarData: Float32Array | Uint16Array | Uint8Array | Int16Array;
     // (undocumented)
     scaling?: Scaling;
     // (undocumented)
@@ -1109,7 +1142,7 @@ interface IImageVolume {
     // (undocumented)
     referencedVolumeId?: string;
     // (undocumented)
-    scalarData: any;
+    scalarData: Uint8Array | Uint16Array | Float32Array | Int16Array;
     // (undocumented)
     scaling?: {
         PET?: {
@@ -1281,7 +1314,7 @@ export class ImageVolume implements IImageVolume {
     // (undocumented)
     referencedVolumeId?: string;
     // (undocumented)
-    scalarData: Float32Array | Uint8Array;
+    scalarData: Float32Array | Uint8Array | Uint16Array | Int16Array;
     // (undocumented)
     scaling?: {
         PET?: {
@@ -1314,7 +1347,7 @@ type ImageVolumeModifiedEventDetail = {
 function indexWithinDimensions(index: Point3, dimensions: Point3): boolean;
 
 // @public (undocumented)
-export function init(defaultConfiguration?: {}): Promise<boolean>;
+export function init(configuration?: {}): Promise<boolean>;
 
 // @public (undocumented)
 enum InterpolationType {
@@ -1586,7 +1619,7 @@ interface IVolume {
     // (undocumented)
     referencedVolumeId?: string;
     // (undocumented)
-    scalarData: Float32Array | Uint8Array;
+    scalarData: Float32Array | Uint8Array | Uint16Array | Int16Array;
     // (undocumented)
     scaling?: {
         PET?: {
@@ -1932,6 +1965,9 @@ type ScalingParameters = {
 };
 
 // @public (undocumented)
+export function setPreferSizeOverAccuracy(status: boolean): void;
+
+// @public (undocumented)
 export class Settings {
     constructor(base?: Settings);
     // (undocumented)
@@ -2142,6 +2178,7 @@ export function triggerEvent(el: EventTarget, type: string, detail?: unknown): b
 
 declare namespace Types {
     export {
+        Cornerstone3DConfig,
         ICamera,
         IStackViewport,
         IVolumeViewport,
@@ -2237,6 +2274,8 @@ declare namespace utilities {
         isOpposite,
         createFloat32SharedArray,
         createUint8SharedArray,
+        createUint16SharedArray,
+        createInt16SharedArray,
         windowLevel,
         getClosestImageId,
         getSpacingInNormalDirection,
@@ -2261,7 +2300,10 @@ declare namespace utilities {
         spatialRegistrationMetadataProvider,
         getViewportImageCornersInWorld,
         hasNaNValues,
-        applyPreset
+        applyPreset,
+        deepMerge,
+        getScalingParameters,
+        getScalarDataType
     }
 }
 export { utilities }

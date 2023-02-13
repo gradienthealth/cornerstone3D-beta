@@ -203,16 +203,6 @@ export default class StreamingImageVolume extends ImageVolume {
     // Length of one frame in bytes
     const lengthInBytes = arrayBuffer.byteLength / numFrames;
 
-    let type;
-
-    if (scalarData instanceof Uint8Array) {
-      type = 'Uint8Array';
-    } else if (scalarData instanceof Float32Array) {
-      type = 'Float32Array';
-    } else {
-      throw new Error('Unsupported array type');
-    }
-
     let framesLoaded = 0;
     let framesProcessed = 0;
 
@@ -390,18 +380,38 @@ export default class StreamingImageVolume extends ImageVolume {
 
       const offset = options.targetBuffer.offset; // in bytes
       const length = options.targetBuffer.length; // in frames
+      const pixelData = image.pixelData
+        ? image.pixelData
+        : image.getPixelData();
+
       try {
         if (scalarData instanceof Float32Array) {
           const bytesInFloat = 4;
-          const floatView = new Float32Array(image.pixelData);
+          const floatView = new Float32Array(pixelData);
           if (floatView.length !== length) {
             throw 'Error pixelData length does not match frame length';
           }
           scalarData.set(floatView, offset / bytesInFloat);
         }
+        if (scalarData instanceof Int16Array) {
+          const bytesInInt16 = 2;
+          const intView = new Int16Array(pixelData);
+          if (intView.length !== length) {
+            throw 'Error pixelData length does not match frame length';
+          }
+          scalarData.set(intView, offset / bytesInInt16);
+        }
+        if (scalarData instanceof Uint16Array) {
+          const bytesInUint16 = 2;
+          const intView = new Uint16Array(pixelData);
+          if (intView.length !== length) {
+            throw 'Error pixelData length does not match frame length';
+          }
+          scalarData.set(intView, offset / bytesInUint16);
+        }
         if (scalarData instanceof Uint8Array) {
           const bytesInUint8 = 1;
-          const intView = new Uint8Array(image.pixelData);
+          const intView = new Uint8Array(pixelData);
           if (intView.length !== length) {
             throw 'Error pixelData length does not match frame length';
           }
@@ -419,26 +429,8 @@ export default class StreamingImageVolume extends ImageVolume {
         return;
       }
 
-      const modalityLutModule =
-        metaData.get('modalityLutModule', imageId) || {};
-
-      const generalSeriesModule =
-        metaData.get('generalSeriesModule', imageId) || {};
-
-      const scalingParameters: Types.ScalingParameters = {
-        rescaleSlope: modalityLutModule.rescaleSlope,
-        rescaleIntercept: modalityLutModule.rescaleIntercept,
-        modality: generalSeriesModule.modality,
-      };
-
-      if (scalingParameters.modality === 'PT') {
-        const suvFactor = metaData.get('scalingModule', imageId);
-
-        if (suvFactor) {
-          this._addScalingToVolume(suvFactor);
-          scalingParameters.suvbw = suvFactor.suvbw;
-        }
-      }
+      const scalingParameters = csUtils.getScalingParameters(imageId);
+      this._addScalingToVolumeIfNecessary(scalingParameters);
 
       const options = {
         // WADO Image Loader
@@ -449,10 +441,12 @@ export default class StreamingImageVolume extends ImageVolume {
           // 300-500MB volume array buffer. Instead the volume should be progressively
           // set in the main thread.
           arrayBuffer:
-            arrayBuffer instanceof ArrayBuffer ? undefined : arrayBuffer,
+            scalarData.buffer instanceof ArrayBuffer
+              ? undefined
+              : scalarData.buffer,
           offset: imageIdIndex * lengthInBytes,
           length,
-          type,
+          type: scalarData.constructor.name,
         },
         skipCreateImage: true,
         preScale: {
@@ -471,7 +465,6 @@ export default class StreamingImageVolume extends ImageVolume {
           (image) => {
             // scalarData is the volume container we are progressively loading into
             // image is the pixelData decoded from workers in cornerstoneWADOImageLoader
-            const scalarData = this.scalarData;
             handleArrayBufferLoad(scalarData, image, options);
             successCallback(imageIdIndex, imageId, scalingParameters);
           },
@@ -601,13 +594,20 @@ export default class StreamingImageVolume extends ImageVolume {
     return scaledArray;
   }
 
-  private _addScalingToVolume(suvFactor) {
+  private _addScalingToVolumeIfNecessary(
+    scalingParameters: Types.ScalingParameters
+  ) {
+    const { suvbsa, suvbw, suvlbm } = scalingParameters;
+    if (suvbsa !== undefined || suvbw !== undefined || suvlbm !== undefined) {
+      this._addScalingToVolume({ suvbsa, suvbw, suvlbm });
+    }
+  }
+
+  private _addScalingToVolume({ suvbsa, suvbw, suvlbm }) {
     // Todo: handle case where suvFactors are not the same for all frames
     if (this.scaling) {
       return;
     }
-
-    const { suvbw, suvlbm, suvbsa } = suvFactor;
 
     const petScaling = <Types.PTScaling>{};
 
