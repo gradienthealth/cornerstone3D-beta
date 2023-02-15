@@ -579,7 +579,6 @@ class Cache implements ICache {
 
         this.decacheIfNecessaryUntilBytesAvailable(
           volume.sizeInBytes,
-          // @ts-ignore: // todo ImageVolume does not have imageIds
           volume.imageIds
         );
 
