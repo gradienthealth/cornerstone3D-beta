@@ -151,9 +151,15 @@ class WindowLevelTool extends BaseTool {
     if (volumeId) {
       const imageVolume = cache.getVolume(volumeId);
       const { dimensions, scalarData } = imageVolume;
-      imageDynamicRange = this._getImageDynamicRangeFromMiddleSlice(
+      const calculatedDynamicRange = this._getImageDynamicRangeFromMiddleSlice(
         scalarData,
         dimensions
+      );
+      const BitsStored = imageVolume?.metadata?.BitsStored;
+      const metadataDynamicRange = BitsStored ? 2 ** BitsStored : Infinity;
+      imageDynamicRange = Math.min(
+        calculatedDynamicRange,
+        metadataDynamicRange
       );
     } else {
       imageDynamicRange = this._getImageDynamicRangeFromViewport(viewport);
@@ -166,7 +172,6 @@ class WindowLevelTool extends BaseTool {
     if (ratio > 1) {
       multiplier = Math.round(ratio);
     }
-
     return multiplier;
   }
 
