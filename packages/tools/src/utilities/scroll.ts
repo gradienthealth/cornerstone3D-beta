@@ -2,6 +2,8 @@ import {
   StackViewport,
   Types,
   VolumeViewport,
+  eventTarget,
+  EVENTS,
   utilities as csUtils,
 } from '@cornerstonejs/core';
 import { ScrollOptions } from '../types';
@@ -29,6 +31,26 @@ export default function scroll(
   } else {
     throw new Error(`Not implemented for Viewport Type: ${viewportType}`);
   }
+}
+
+/**
+ * _getDeltaFrameIndex is a subset of functionality copied from csUtils.snapFocalPointToSlice
+ * @param delta
+ * @param sliceRange
+ * @param spacingInNormalDirection
+ * @returns { int, int }
+ */
+function _getDeltaFrameIndex(delta, sliceRange, spacingInNormalDirection) {
+  const { min, max, current } = sliceRange;
+  const steps = Math.round((max - min) / spacingInNormalDirection);
+
+  const fraction = (current - min) / (max - min);
+  const floatingStepNumber = fraction * steps;
+  let frameIndex = Math.round(floatingStepNumber);
+
+  frameIndex += delta;
+
+  return { frameIndex, steps };
 }
 
 export function scrollVolume(
@@ -59,4 +81,24 @@ export function scrollVolume(
     position: newPosition,
   });
   viewport.render();
+
+  const { frameIndex: desiredFrameIndex, steps: maxFrameIndex } =
+    _getDeltaFrameIndex(delta, sliceRange, spacingInNormalDirection);
+
+  if (
+    (desiredFrameIndex > maxFrameIndex || desiredFrameIndex < 0) &&
+    viewport.getCurrentImageId() // Check that we are in the plane of acquistion
+  ) {
+    // One common use case of this trigger might be to load the next
+    // volume in a time series or the next segment of a partially loaded volume.
+    csUtils.triggerEvent(eventTarget, EVENTS.VOLUME_SCROLL_OUT_OF_BOUNDS, {
+      volumeId: volumeId,
+      viewport: viewport,
+      delta,
+      desiredFrameIndex,
+      maxFrameIndex,
+      currentImageId: viewport.getCurrentImageId(),
+      currentFrameIndex: desiredFrameIndex - delta,
+    });
+  }
 }
