@@ -148,7 +148,6 @@ export class ImageVolume implements IImageVolume {
    */
   destroy(): void {
     this.vtkOpenGLTexture.delete();
-    this.imageData.getPointData().getScalars().delete();
     this.scalarData = null;
   }
 }
