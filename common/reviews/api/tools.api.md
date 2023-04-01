@@ -4711,6 +4711,8 @@ export class StackScrollMouseWheelTool extends BaseTool {
 export class StackScrollTool extends BaseTool {
     constructor(toolProps?: PublicToolProps, defaultToolProps?: ToolProps);
     // (undocumented)
+    deltaX: number;
+    // (undocumented)
     deltaY: number;
     // (undocumented)
     _dragCallback(evt: EventTypes_2.InteractionEventType): void;
@@ -4724,6 +4726,8 @@ export class StackScrollTool extends BaseTool {
     static toolName: any;
     // (undocumented)
     touchDragCallback(evt: EventTypes_2.InteractionEventType): void;
+    // (undocumented)
+    _triggerMIP(viewport: any, delta: any, invert: any): void;
 }
 
 // @public
