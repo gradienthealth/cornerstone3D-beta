@@ -17,6 +17,7 @@ import { getConfiguration } from '../init';
 
 interface VolumeLoaderOptions {
   imageIds: Array<string>;
+  targetBuffer?: ArrayBuffer | SharedArrayBuffer | null;
 }
 
 interface DerivedVolumeOptions {

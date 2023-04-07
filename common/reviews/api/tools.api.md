@@ -2540,6 +2540,8 @@ interface IImageVolume {
     imageId: string,
     imageIdIndex: number
     ) => IImageLoadObject;
+    // (undocumented)
+    deleteScalarData();
     destroy(): void;
     dimensions: Point3;
     direction: Mat3;

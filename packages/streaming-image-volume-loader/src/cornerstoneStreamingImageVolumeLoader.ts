@@ -41,6 +41,7 @@ interface IVolumeLoader {
 function cornerstoneStreamingImageVolumeLoader(
   volumeId: string,
   options: {
+    targetBuffer: SharedArrayBuffer | ArrayBuffer | null;
     imageIds: string[];
   }
 ): IVolumeLoader {
@@ -161,6 +162,19 @@ function cornerstoneStreamingImageVolumeLoader(
       cache.decacheIfNecessaryUntilBytesAvailable(sizeInBytes);
     };
 
+    const targetBufferReusable = (options, sizeInBytes) => {
+      if (
+        options.targetBuffer &&
+        options.targetBuffer.byteLength === sizeInBytes &&
+        !useSharedArrayBuffer === options.targetBuffer instanceof ArrayBuffer
+      ) {
+        return true;
+      } else {
+        delete options.targetBuffer;
+        return false;
+      }
+    };
+
     let scalarData, sizeInBytes;
     switch (BitsAllocated) {
       case 8:
@@ -170,6 +184,12 @@ function cornerstoneStreamingImageVolumeLoader(
           );
         }
         sizeInBytes = length;
+        if (targetBufferReusable(options, sizeInBytes)) {
+          scalarData = new Uint8Array(options.targetBuffer);
+          scalarData.fill(0);
+          break;
+        }
+
         handleCache(sizeInBytes);
         scalarData = useSharedArrayBuffer
           ? createUint8SharedArray(length)
@@ -182,6 +202,11 @@ function cornerstoneStreamingImageVolumeLoader(
         // correctly
         if (!use16BitDataType) {
           sizeInBytes = length * 4;
+          if (targetBufferReusable(options, sizeInBytes)) {
+            scalarData = new Float32Array(options.targetBuffer);
+            scalarData.fill(0);
+            break;
+          }
           scalarData = useSharedArrayBuffer
             ? createFloat32SharedArray(length)
             : new Float32Array(length);
@@ -191,6 +216,11 @@ function cornerstoneStreamingImageVolumeLoader(
 
         sizeInBytes = length * 2;
         if (signed || hasNegativeRescale) {
+          if (targetBufferReusable(options, sizeInBytes)) {
+            scalarData = new Int16Array(options.targetBuffer);
+            scalarData.fill(0);
+            break;
+          }
           handleCache(sizeInBytes);
           scalarData = useSharedArrayBuffer
             ? createInt16SharedArray(length)
@@ -199,6 +229,11 @@ function cornerstoneStreamingImageVolumeLoader(
         }
 
         if (!signed && !hasNegativeRescale) {
+          if (targetBufferReusable(options, sizeInBytes)) {
+            scalarData = new Uint16Array(options.targetBuffer);
+            scalarData.fill(0);
+            break;
+          }
           handleCache(sizeInBytes);
           scalarData = useSharedArrayBuffer
             ? createUint16SharedArray(length)
@@ -208,6 +243,11 @@ function cornerstoneStreamingImageVolumeLoader(
 
         // Default to Float32 again
         sizeInBytes = length * 4;
+        if (targetBufferReusable(options, sizeInBytes)) {
+          scalarData = new Float32Array(options.targetBuffer);
+          scalarData.fill(0);
+          break;
+        }
         handleCache(sizeInBytes);
         scalarData = useSharedArrayBuffer
           ? createFloat32SharedArray(length)
@@ -216,6 +256,11 @@ function cornerstoneStreamingImageVolumeLoader(
 
       case 24:
         sizeInBytes = length * numComponents;
+        if (targetBufferReusable(options, sizeInBytes)) {
+          scalarData = new Uint8Array(options.targetBuffer);
+          scalarData.fill(0);
+          break;
+        }
         handleCache(sizeInBytes);
 
         // hacky because we don't support alpha channel in dicom

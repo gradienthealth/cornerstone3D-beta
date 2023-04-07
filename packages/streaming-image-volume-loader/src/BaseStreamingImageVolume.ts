@@ -574,6 +574,7 @@ export default class BaseStreamingImageVolume extends ImageVolume {
       const callLoadImage = (imageId, imageIdIndex, options) => {
         return imageLoader.loadImage(imageId, options).then(
           (image) => {
+            if (imageData.isDeleted()) return;
             // scalarData is the volume container we are progressively loading into
             // image is the pixelData decoded from workers in cornerstoneDICOMImageLoader
             handleArrayBufferLoad(scalarData, image, options);

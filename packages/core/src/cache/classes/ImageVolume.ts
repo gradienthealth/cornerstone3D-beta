@@ -126,6 +126,10 @@ export class ImageVolume implements IImageVolume {
     throw new Error('Unknow scalar data type');
   }
 
+  public deleteScalarData() {
+    this.scalarData = null;
+  }
+
   /**
    * return the index of a given imageId
    * @param imageId - imageId

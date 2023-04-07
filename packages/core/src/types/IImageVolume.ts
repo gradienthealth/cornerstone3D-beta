@@ -65,6 +65,8 @@ interface IImageVolume {
   /** return the volume scalar data */
   getScalarData(): VolumeScalarData;
 
+  deleteScalarData();
+
   /** return the index of a given imageId */
   getImageIdIndex(imageId: string): number;
 

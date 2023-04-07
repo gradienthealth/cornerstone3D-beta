@@ -134,6 +134,7 @@ class Cache implements ICache {
 
     if (volume.imageData) {
       volume.imageData.delete();
+      volume.deleteScalarData();
     }
 
     if (volumeLoadObject.cancelFn) {

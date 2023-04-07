@@ -1178,6 +1178,8 @@ interface IImageVolume {
     // (undocumented)
     convertToCornerstoneImage?: (imageId: string, imageIdIndex: number) => IImageLoadObject;
     // (undocumented)
+    deleteScalarData(): any;
+    // (undocumented)
     destroy(): void;
     // (undocumented)
     dimensions: Point3;
@@ -1357,6 +1359,8 @@ export class ImageVolume implements IImageVolume {
     constructor(props: IVolume);
     // (undocumented)
     cancelLoading: () => void;
+    // (undocumented)
+    deleteScalarData(): void;
     // (undocumented)
     destroy(): void;
     // (undocumented)

@@ -117,6 +117,7 @@ export function cornerstoneStreamingDynamicImageVolumeLoader(volumeId: string, o
 
 // @public (undocumented)
 export function cornerstoneStreamingImageVolumeLoader(volumeId: string, options: {
+    targetBuffer: SharedArrayBuffer | ArrayBuffer | null;
     imageIds: string[];
 }): IVolumeLoader;
 
@@ -834,6 +835,8 @@ interface IImageVolume {
     imageId: string,
     imageIdIndex: number
     ) => IImageLoadObject;
+    // (undocumented)
+    deleteScalarData();
     destroy(): void;
     dimensions: Point3;
     direction: Mat3;
