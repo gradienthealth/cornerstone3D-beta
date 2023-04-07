@@ -213,6 +213,8 @@ function _doMouseDown(evt: MouseEvent) {
  * @param evt - The mouse event.
  */
 function _onMouseDrag(evt: MouseEvent) {
+  if ((evt.target as HTMLElement).className !== 'cornerstone-canvas') return;
+
   const currentPoints = getMouseEventPoints(evt, state.element);
   const lastPoints = _updateMouseEventsLastPoints(
     state.element,
@@ -266,6 +268,7 @@ function _onMouseDrag(evt: MouseEvent) {
  * @param evt - The mouse event.
  */
 function _onMouseUp(evt: MouseEvent): void {
+  if ((evt.target as HTMLElement).className !== 'cornerstone-canvas') return;
   // Cancel the timeout preventing the click event from triggering
   clearTimeout(state.preventClickTimeout);
 
