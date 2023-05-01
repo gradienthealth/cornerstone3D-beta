@@ -61,6 +61,8 @@ interface ToolConfiguration {
     getReferenceLineControllable?: (viewportId: string) => boolean;
     getReferenceLineDraggableRotatable?: (viewportId: string) => boolean;
     getReferenceLineSlabThicknessControlsOn?: (viewportId: string) => boolean;
+    onDragHook?: () => void;
+    onEndHook?: () => void;
     shadow?: boolean;
     autopan?: {
       enabled: boolean;
@@ -2017,6 +2019,9 @@ class CrosshairsTool extends AnnotationTool {
     );
 
     triggerAnnotationRenderForViewportIds(renderingEngine, viewportIdsToRender);
+    if (this.configuration?.onEndHook) {
+      this.configuration.onEndHook();
+    }
   };
 
   _dragCallback = (evt: EventTypes.InteractionEventType) => {
@@ -2058,7 +2063,6 @@ class CrosshairsTool extends AnnotationTool {
           enabledElement,
           annotations
         );
-
       const viewportsAnnotationsToUpdate = otherViewportAnnotations.filter(
         (annotation) => {
           const { data } = annotation;
@@ -2078,7 +2082,9 @@ class CrosshairsTool extends AnnotationTool {
           );
         }
       );
-
+      if (this.configuration?.onDragHook) {
+        this.configuration.onDragHook(viewportsAnnotationsToUpdate);
+      }
       this._applyDeltaShiftToSelectedViewportCameras(
         renderingEngine,
         viewportsAnnotationsToUpdate,
@@ -2108,7 +2114,9 @@ class CrosshairsTool extends AnnotationTool {
           );
         }
       );
-
+      if (this.configuration?.onDragHook) {
+        this.configuration.onDragHook(viewportsAnnotationsToUpdate);
+      }
       const dir1 = vec2.create();
       const dir2 = vec2.create();
 
@@ -2222,6 +2230,9 @@ class CrosshairsTool extends AnnotationTool {
           referenceAnnotations[0],
           annotations
         );
+      if (this.configuration?.onDragHook) {
+        this.configuration.onDragHook(viewportsAnnotationsToUpdate);
+      }
 
       const viewportsIds = [];
       viewportsIds.push(viewport.id);
