@@ -68,6 +68,7 @@
     "@cornerstonejs/codec-openjph": "^2.4.5",
     "@cornerstonejs/core": "^1.41.0",
     "dicom-parser": "^1.8.9",
+    "jszip": "^3.10.1",
     "pako": "^2.0.4",
     "uuid": "^9.0.0"
   },
