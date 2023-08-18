@@ -3,6 +3,9 @@ import { DataSet } from "dicom-parser";
 import external from '../../externalModules';
 import { LoadRequestFunction } from "dicomImageLoader/src/types";
 
+let loadedDataSets: Record<string, { dataSet: DataSet}> =
+  {};
+
 function load(
   zipUrl:string,
   imageId:string,
@@ -20,6 +23,8 @@ function load(
 
     //  If zip is loading, start loading the imageId and return the promise
   // This zip is not loaded or being loaded, load it via an xhrRequest
+  const dicomInZip = zipUrl + '/' + dicomFile;
+
   const loadZipPromise = loadRequest(zipUrl, imageId);
   const zipPromise = new Promise<DataSet>((resolve, reject) => {
     loadZipPromise.then(async (arrayBuffer)=>{
@@ -38,6 +43,7 @@ function load(
     } catch (error) {
       return reject(error);
     }
+    loadedDataSets[dicomInZip] = { dataSet};
     resolve(dataSet);
     },reject)
   });
@@ -45,4 +51,8 @@ function load(
 return zipPromise;
 }
 
-export default {load};
+function get(imageId) {
+  return loadedDataSets[imageId].dataSet;
+}
+
+export default {load, get};
