@@ -1,58 +1,90 @@
-import JSZip from "jszip";
-import { DataSet } from "dicom-parser";
+import JSZip, { JSZipObject } from 'jszip';
+import { DataSet } from 'dicom-parser';
 import external from '../../externalModules';
-import { LoadRequestFunction } from "dicomImageLoader/src/types";
+import { LoadRequestFunction } from 'dicomImageLoader/src/types';
 
-let loadedDataSets: Record<string, { dataSet: DataSet}> =
-  {};
+let zipPromises = {};
+let extractedDicomFiles: Record<string, Record<string, JSZipObject>> = {};
+let loadedDataSets: Record<string, { dataSet: DataSet; }> ={};
 
 function load(
   zipUrl:string,
   imageId:string,
   dicomFile:string,
-  loadRequest:LoadRequestFunction):Promise<DataSet>{
+  loadRequest:LoadRequestFunction):Promise<DataSet> {
 
-  const {  dicomParser } = external;
-  //Check is the zip loaded
-    // If not loaded, start loading the zip, loading the imageId and return the promise
-    // If zip is loaded,
-      // Check if the imageId is loaded.
-      // If the imageId is loaded, return that.
-      // If imageId is being loaded, return that promise
-      // Else start loading imageId and return that promise
-
-    //  If zip is loading, start loading the imageId and return the promise
-  // This zip is not loaded or being loaded, load it via an xhrRequest
   const dicomInZip = zipUrl + '/' + dicomFile;
 
-  const loadZipPromise = loadRequest(zipUrl, imageId);
+  // If the dataSet is already loaded, return it right away.
+  if (loadedDataSets[dicomInZip]) {
+    return new Promise((resolve) => {
+      resolve(loadedDataSets[dicomInZip].dataSet);
+    });
+  }
+
+  // If the dicom file is extracted from zip, create dataSet
+  if (extractedDicomFiles[zipUrl]) {
+    const currentDicomFile = extractedDicomFiles[zipUrl][dicomFile];
+    return loadDataSetFromFile(currentDicomFile, dicomInZip);
+  }
+
+  let loadZipPromise: Promise<ArrayBuffer>;
+
+  if (zipPromises[zipUrl]) {
+    loadZipPromise = zipPromises[zipUrl];
+  } else {
+    loadZipPromise = loadRequest(zipUrl, imageId);
+    zipPromises[zipUrl] = loadZipPromise;
+  }
+
   const zipPromise = new Promise<DataSet>((resolve, reject) => {
-    loadZipPromise.then(async (arrayBuffer)=>{
+    loadZipPromise.then(async (arrayBuffer) => {
+      let extractedFile: JSZipObject;
+      if (extractedDicomFiles[zipUrl]) {
+        extractedFile = extractedDicomFiles[zipUrl][dicomInZip];
+      } else {
+        let zip = new JSZip();
+        const extractedFiles = await zip.loadAsync(arrayBuffer);
+        extractedFile = extractedFiles.files[dicomFile];
+        extractedDicomFiles[zipUrl] = extractedFiles.files;
 
-     let zip = new JSZip();
-     const extractedFiles = await zip.loadAsync(arrayBuffer);
-     console.log('unzipping');
+        // remove cached zip promise.
+        delete zipPromises[zipUrl];
 
-    const currentDicomFile = extractedFiles.files[dicomFile];
-    const dicomFileBuffer = await currentDicomFile.async('arraybuffer');
+      }
+      loadDataSetFromFile(extractedFile, dicomInZip).then(
+        (dataset) => resolve(dataset),
+        reject
+      );
+    }, reject);
+  });
+  return zipPromise;
+}
+
+async function loadDataSetFromFile(
+  extractedFile,
+  dicomInZip
+): Promise<DataSet> {
+  const { dicomParser } = external;
+
+  return new Promise(async (resolve, reject) => {
+    const dicomFileBuffer = await extractedFile.async('arraybuffer');
 
     const byteArray = new Uint8Array(dicomFileBuffer);
-    let dataSet: DataSet
+
+    let dataSet: DataSet;
     try {
-        dataSet = dicomParser.parseDicom(byteArray);
+      dataSet = dicomParser.parseDicom(byteArray);
     } catch (error) {
       return reject(error);
     }
     loadedDataSets[dicomInZip] = { dataSet};
     resolve(dataSet);
-    },reject)
   });
-
-return zipPromise;
 }
 
-function get(imageId) {
+function get(imageId:string) {
   return loadedDataSets[imageId].dataSet;
 }
 
-export default {load, get};
+export default { load, get };
