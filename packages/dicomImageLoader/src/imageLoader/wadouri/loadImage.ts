@@ -11,6 +11,7 @@ import {
 } from '../../types';
 import getPixelData from './getPixelData';
 import loadFileRequest from './loadFileRequest';
+import loadZipRequest from './loadZipRequest';
 import parseImageId from './parseImageId';
 
 // add a decache callback function to clear out our dataSetCacheManager
@@ -167,6 +168,9 @@ function getLoaderForScheme(scheme: string): LoadRequestFunction {
     return xhrRequest;
   } else if (scheme === 'dicomfile') {
     return loadFileRequest;
+  }
+  else if (scheme === 'dicomzip'){
+    return loadZipRequest;
   }
 }
 

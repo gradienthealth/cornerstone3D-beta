@@ -4,8 +4,8 @@ import { metaDataProvider } from './metaData';
 
 export default function (cornerstone: typeof cornerstoneImport): void {
   // register dicomzip image loader prefix
-  cornerstone.registerImageLoader('dicomzip', loadImage);
+ // cornerstone.registerImageLoader('dicomzip', loadImage);
 
   // add wadourizip metadata provider
-  cornerstone.metaData.addProvider(metaDataProvider);
+ // cornerstone.metaData.addProvider(metaDataProvider);
 }
