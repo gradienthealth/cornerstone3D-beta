@@ -7,6 +7,7 @@ export default function (cornerstone: typeof cornerstoneImport): void {
   cornerstone.registerImageLoader('dicomweb', loadImage);
   cornerstone.registerImageLoader('wadouri', loadImage);
   cornerstone.registerImageLoader('dicomfile', loadImage);
+  cornerstone.registerImageLoader('dicomzip', loadImage);
 
   // add wadouri metadata provider
   cornerstone.metaData.addProvider(metaDataProvider);
