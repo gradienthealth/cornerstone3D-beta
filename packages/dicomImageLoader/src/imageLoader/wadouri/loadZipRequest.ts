@@ -2,21 +2,21 @@
 //import fileManager from './fileManager';
 import JSZip, { JSZipObject } from 'jszip';
 import { xhrRequest } from '../internal/index';
+import zipFileManger from './zipFileManger';
 
 let zipPromises = {};
 let extractedDicomFiles: Record<string, Record<string, JSZipObject>> = {};
 
-function loadZipRequest(uri: string, imageId:string): Promise<ArrayBuffer> {
+function loadZipRequest(uri: string, imageId: string): Promise<ArrayBuffer> {
   const dicomFileIndex = uri.lastIndexOf('/');
   const dicomFile = uri.substring(dicomFileIndex + 1);
   const zipUrl = uri.substring(0, dicomFileIndex);
 
   // If the dicom file is extracted from zip, create dataSet
-  if (extractedDicomFiles[zipUrl]) {
-    const currentDicomFile = extractedDicomFiles[zipUrl][dicomFile];
-    //return loadDataSetFromFile(currentDicomFile, dicomInZip);
+  const extractedFile = zipFileManger.get(zipUrl, dicomFile);
+  if (extractedFile) {
     return new Promise<ArrayBuffer>(async (resolve, reject) => {
-      const dicomFileBuffer = await currentDicomFile.async('arraybuffer');
+      const dicomFileBuffer = await extractedFile.async('arraybuffer');
       resolve(dicomFileBuffer);
     });
   }
@@ -31,21 +31,21 @@ function loadZipRequest(uri: string, imageId:string): Promise<ArrayBuffer> {
   }
 
   return new Promise<ArrayBuffer>(async (resolve, reject) => {
-  loadZipPromise.then(async (arrayBuffer) => {
+    loadZipPromise.then(async (arrayBuffer) => {
       let extractedFile: JSZipObject;
-      if (extractedDicomFiles[zipUrl]) {
-        extractedFile = extractedDicomFiles[zipUrl][uri];
-      } else {
+      extractedFile = zipFileManger.get(zipUrl, dicomFile);
+      if (!extractedFile) {
         let zip = new JSZip();
         const extractedFiles = await zip.loadAsync(arrayBuffer);
         extractedFile = extractedFiles.files[dicomFile];
-        extractedDicomFiles[zipUrl] = extractedFiles.files;
+        zipFileManger.add(zipUrl, extractedFiles.files);
 
         // remove cached zip promise.
         delete zipPromises[zipUrl];
       }
-       const dicomFileBuffer = await extractedFile.async('arraybuffer');
-       resolve(dicomFileBuffer);
+
+      const dicomFileBuffer = await extractedFile.async('arraybuffer');
+      resolve(dicomFileBuffer);
     });
   });
 }
