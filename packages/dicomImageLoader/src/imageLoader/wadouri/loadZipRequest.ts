@@ -2,15 +2,17 @@ import JSZip, { JSZipObject } from 'jszip';
 import { xhrRequest } from '../internal/index';
 import zipFileManger from './zipFileManger';
 
+interface zipImageUrl {
+  zipUrl: string;
+  dicomPath:string;
+}
+
 let zipPromises = {};
 
 function loadZipRequest(uri: string, imageId: string): Promise<ArrayBuffer> {
-  const dicomFileIndex = uri.lastIndexOf('/');
-  const dicomFile = uri.substring(dicomFileIndex + 1);
-  const zipUrl = uri.substring(0, dicomFileIndex);
+  const { zipUrl, dicomPath } = parseuri(uri);
 
-  // If the dicom file is extracted from zip, create dataSet
-  const extractedFile = zipFileManger.get(zipUrl, dicomFile);
+  const extractedFile = zipFileManger.get(zipUrl, dicomPath);
   if (extractedFile) {
     return new Promise<ArrayBuffer>(async (resolve, reject) => {
       try {
@@ -32,13 +34,13 @@ function loadZipRequest(uri: string, imageId: string): Promise<ArrayBuffer> {
 
       loadPromise.then(async (arrayBuffer) => {
         let extractedFile: JSZipObject;
-        extractedFile = zipFileManger.get(zipUrl, dicomFile);
+        extractedFile = zipFileManger.get(zipUrl, dicomPath);
 
         if (!extractedFile) {
           try {
             let zip = new JSZip();
             const extractedFiles = await zip.loadAsync(arrayBuffer);
-            extractedFile = extractedFiles.files[dicomFile];
+            extractedFile = extractedFiles.files[dicomPath];
             zipFileManger.add(zipUrl, extractedFiles.files);
             delete zipPromises[zipUrl];
           } catch (error) {
@@ -46,22 +48,34 @@ function loadZipRequest(uri: string, imageId: string): Promise<ArrayBuffer> {
           }
         }
         resolve();
-      }, reject);
+      }, (error)=>reject(error));
     });
     zipPromises[zipUrl] = zipPromise;
   }
 
   return new Promise<ArrayBuffer>((resolve, reject) => {
     zipPromise.then(async () => {
-      const file = zipFileManger.get(zipUrl, dicomFile);
+      const file = zipFileManger.get(zipUrl, dicomPath);
       try {
         const dicomFileBuffer = await file.async('arraybuffer');
         resolve(dicomFileBuffer);
       } catch (error) {
         reject(error);
       }
-    }, reject);
+    },
+    (error)=>reject(error));
   });
+}
+
+function parseuri(uri: string): zipImageUrl {
+  const zipIndex = uri.indexOf('.zip');
+  const dicomPath = uri.substring(zipIndex + 5);
+  const zipUrl = uri.substring(0, zipIndex+4);
+
+  return{
+    zipUrl,
+    dicomPath
+  }
 }
 
 export default loadZipRequest;
