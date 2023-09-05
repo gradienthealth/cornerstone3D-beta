@@ -45,10 +45,11 @@ function loadZipRequest(uri: string, imageId: string): Promise<ArrayBuffer> {
             delete zipPromises[zipUrl];
           } catch (error) {
             reject(error);
+            return;
           }
         }
         resolve();
-      }, (error)=>reject(error));
+      }, reject);
     });
     zipPromises[zipUrl] = zipPromise;
   }
@@ -62,20 +63,13 @@ function loadZipRequest(uri: string, imageId: string): Promise<ArrayBuffer> {
       } catch (error) {
         reject(error);
       }
-    },
-    (error)=>reject(error));
+    }, reject);
   });
 }
 
 function parseuri(uri: string): zipImageUrl {
-  const zipIndex = uri.indexOf('.zip');
-  const dicomPath = uri.substring(zipIndex + 5);
-  const zipUrl = uri.substring(0, zipIndex+4);
-
-  return{
-    zipUrl,
-    dicomPath
-  }
+  const [zipUrl, dicomPath] = uri.split(':zip//');
+  return {zipUrl,dicomPath};
 }
 
 export default loadZipRequest;
