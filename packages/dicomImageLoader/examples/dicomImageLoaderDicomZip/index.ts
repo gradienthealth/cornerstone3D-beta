@@ -238,8 +238,6 @@ function downloadAndView(downloadUrl) {
 
   // prefix the url with dicomzip: so cornerstone can find the image loader
   url = 'dicomzip:' + url;
-  // Just for testing
-  //url = 'dicomzip:http://localhost:9000/axial.zip:zip//1-001.dcm';
 
   // image enable the dicomImage element and activate a few tools
   loadAndViewImage(url);
@@ -251,7 +249,7 @@ function handleImageSelection(event) {
 
   if (selectedFile) {
     downloadAndView(
-      'https://raw.githubusercontent.com/trenserofficial/cornerstone3D/dicom-zip-image-loader/packages/dicomImageLoader/testImages/' +
+      'https://github.com/trenserofficial/cornerstone3D/raw/dicom-zip-image-loader/packages/dicomImageLoader/testImages/' +
         selectedFile
     );
   }
