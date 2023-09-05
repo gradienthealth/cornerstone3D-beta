@@ -237,9 +237,9 @@ function downloadAndView(downloadUrl) {
   let url = downloadUrl || document.getElementById('wadoURL').value;
 
   // prefix the url with dicomzip: so cornerstone can find the image loader
-  //url = 'dicomzip:' + url;
+  url = 'dicomzip:' + url;
   // Just for testing
-  url = 'dicomzip:http://localhost:9000/axial.zip/1-001.dcm';
+  //url = 'dicomzip:http://localhost:9000/axial.zip:zip//1-001.dcm';
 
   // image enable the dicomImage element and activate a few tools
   loadAndViewImage(url);

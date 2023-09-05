@@ -5,9 +5,13 @@ const html = `
    <select id="imageSelector">
     <option value="" selected>Select an image</option>
     <optgroup label="Dicom zip">
-        <option>axial.zip/1-001.dcm</option>
+        <option>CT_zip.zip:zip//CTImage.dcm</option>
+        <option>CT_zip.zip:zip//CTImage.dcm_BigEndianExplicitTransferSyntax_1.2.840.10008.1.2.2.dcm</option>
+        <option>CT_zip.zip:zip//CTImage.dcm_DeflatedExplicitVRLittleEndianTransferSyntax_1.2.840.10008.1.2.1.99.dcm</option>
+        <option>CT_zip.zip:zip//CTImage.dcm_JPEG2000LosslessOnlyTransferSyntax_1.2.840.10008.1.2.4.90.dcm</option>
+        <option>CT_zip.zip:zip//CTImage.dcm_JPEG2000TransferSyntax_1.2.840.10008.1.2.4.91.dcm</option>
     </optgroup>
-    <optgroup label="CharLS">
+    <!--<optgroup label="CharLS">
         <option>CTImage.dcm_JPEGLSLosslessTransferSyntax_1.2.840.10008.1.2.4.80.dcm</option>
         <option>CTImage.dcm_JPEGLSLossyTransferSyntax_1.2.840.10008.1.2.4.81.dcm</option>
     </optgroup>
@@ -39,7 +43,7 @@ const html = `
         <option>TestPattern_Palette_16.dcm</option>
         <option>TestPattern_Palette.dcm</option>
         <option>TestPattern_RGB.dcm</option>
-    </optgroup>
+    </optgroup>-->
     </select>
 
     <br>
