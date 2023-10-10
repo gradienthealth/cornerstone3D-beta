@@ -814,15 +814,9 @@ class Viewport implements IViewport {
     }
     const canvasWidth = this.sWidth / devicePixelRatio;
     const canvasHeight = this.sHeight / devicePixelRatio;
-    const dimensions = imageData.getDimensions();
-    const canvasZero = this.worldToCanvas(imageData.indexToWorld([0, 0, 0]));
-    const canvasEdge = this.worldToCanvas(
-      imageData.indexToWorld([
-        dimensions[0] - 1,
-        dimensions[1] - 1,
-        dimensions[2],
-      ])
-    );
+    const bounds = imageData.getBounds();
+    const canvasZero = this.worldToCanvas([bounds[0], bounds[2], bounds[4]]);
+    const canvasEdge = this.worldToCanvas([bounds[1], bounds[3], bounds[5]]);
 
     const canvasImage = [
       Math.abs(canvasEdge[0] - canvasZero[0]),
