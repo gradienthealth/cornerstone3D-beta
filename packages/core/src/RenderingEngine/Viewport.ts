@@ -605,9 +605,9 @@ class Viewport implements IViewport {
       const canvasPanX = validateCanvasPanX * (canvasX - 0.5);
       const canvasPanY = validateCanvasPanY * (canvasY - 0.5);
 
-      const dimensions = imageData.getDimensions();
-      const canvasZero = this.worldToCanvas([0, 0, 0]);
-      const canvasEdge = this.worldToCanvas(dimensions);
+      const bounds = imageData.getBounds();
+      const canvasZero = this.worldToCanvas([bounds[0], bounds[2], bounds[4]]);
+      const canvasEdge = this.worldToCanvas([bounds[1], bounds[3], bounds[5]]);
       const canvasImage = [
         canvasEdge[0] - canvasZero[0],
         canvasEdge[1] - canvasZero[1],
