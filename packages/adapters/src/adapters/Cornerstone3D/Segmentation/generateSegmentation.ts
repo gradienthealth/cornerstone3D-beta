@@ -1,5 +1,6 @@
 import { normalizers, derivations } from "dcmjs";
 import { fillSegmentation } from "../../Cornerstone/Segmentation_4X";
+import overrideNormalize from "./overrideNormalizer";
 
 const { Normalizer } = normalizers;
 const { Segmentation: SegmentationDerivation } = derivations;
@@ -50,6 +51,10 @@ function _createMultiframeSegmentationFromReferencedImages(
             _meta: {}
         };
     });
+
+    // We had overriding Normalizer as currently there is no support for
+    // single slice images like XA and MG.
+    overrideNormalize(metadata);
 
     const multiframe = Normalizer.normalizeToDataset(datasets);
 
