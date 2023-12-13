@@ -2,6 +2,10 @@ import { cache, Types } from '@cornerstonejs/core';
 import * as SegmentationState from '../../../stateManagement/segmentation/segmentationState';
 import { getSegmentationRepresentations } from '../../../stateManagement/segmentation/segmentationState';
 import { ToolGroupSpecificRepresentation } from '../../../types/SegmentationStateTypes';
+import {
+  LabelmapSegmentationDataStack,
+  LabelmapSegmentationDataVolume,
+} from '../../../types/LabelmapTypes';
 import { triggerSegmentationRepresentationModified } from '../triggerSegmentationEvents';
 import SegmentationRepresentations from '../../../enums/SegmentationRepresentations';
 
@@ -9,8 +13,32 @@ function getSegmentationIndices(segmentationId) {
   const segmentation = SegmentationState.getSegmentation(segmentationId);
 
   if (segmentation.type === SegmentationRepresentations.Labelmap) {
-    const volume = cache.getVolume(segmentationId);
-    const scalarData = volume.getScalarData();
+    let scalarData;
+
+    if (
+      (
+        segmentation.representationData
+          .LABELMAP as LabelmapSegmentationDataVolume
+      ).volumeId
+    ) {
+      const volume = cache.getVolume(segmentationId);
+      scalarData = volume.getScalarData();
+    } else {
+      const { imageIdReferenceMap } = segmentation.representationData
+        .LABELMAP as LabelmapSegmentationDataStack;
+
+      const pixelDatas = [];
+      imageIdReferenceMap.forEach((segImageId) => {
+        const image = cache.getImage(segImageId);
+        pixelDatas.push(image.getPixelData());
+      });
+
+      const TypedArray = pixelDatas[0].constructor;
+      scalarData = new TypedArray(pixelDatas[0].length * pixelDatas.length);
+      pixelDatas.forEach((pixelData, index) => {
+        scalarData.set(pixelData, index * pixelData.length);
+      });
+    }
 
     const keySet = {};
     for (let i = 0; i < scalarData.length; i++) {
