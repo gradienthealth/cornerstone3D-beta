@@ -26,28 +26,31 @@ function getSegmentationIndices(segmentationId) {
     } else {
       const { imageIdReferenceMap } = segmentation.representationData
         .LABELMAP as LabelmapSegmentationDataStack;
+      const segImageIds = Array.from(imageIdReferenceMap.values());
+      const firstImage = cache.getImage(segImageIds[0]);
 
-      const pixelDatas = [];
-      imageIdReferenceMap.forEach((segImageId) => {
+      const TypedArray = firstImage.getPixelData().constructor.name;
+      scalarData = new window[TypedArray](
+        segImageIds.length * firstImage.rows * firstImage.columns
+      );
+
+      segImageIds.forEach((segImageId, index) => {
         const image = cache.getImage(segImageId);
-        pixelDatas.push(image.getPixelData());
-      });
-
-      const TypedArray = pixelDatas[0].constructor;
-      scalarData = new TypedArray(pixelDatas[0].length * pixelDatas.length);
-      pixelDatas.forEach((pixelData, index) => {
-        scalarData.set(pixelData, index * pixelData.length);
+        scalarData.set(
+          image.getPixelData(),
+          index * image.rows * image.columns
+        );
       });
     }
 
-    const keySet = {};
+    const segmentIndices = [];
     for (let i = 0; i < scalarData.length; i++) {
       const segmentIndex = scalarData[i];
-      if (segmentIndex !== 0 && !keySet[segmentIndex]) {
-        keySet[segmentIndex] = true;
+      if (segmentIndex !== 0 && !segmentIndices.includes(segmentIndex)) {
+        segmentIndices.push(segmentIndex);
       }
     }
-    return Object.keys(keySet).map((it) => parseInt(it, 10));
+    return segmentIndices;
   } else if (segmentation.type === SegmentationRepresentations.Contour) {
     const geometryIds = segmentation.representationData.CONTOUR?.geometryIds;
 
