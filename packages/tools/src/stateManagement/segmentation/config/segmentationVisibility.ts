@@ -12,8 +12,14 @@ import SegmentationRepresentations from '../../../enums/SegmentationRepresentati
 function getSegmentationIndices(segmentationId) {
   const segmentation = SegmentationState.getSegmentation(segmentationId);
 
+  const findUniqueElements = (array, keySets) => {
+    for (let i = 0; i < array.length; i++) {
+      keySets[array[i]] = true;
+    }
+  };
+
   if (segmentation.type === SegmentationRepresentations.Labelmap) {
-    let scalarData;
+    const keySets = {};
 
     if (
       (
@@ -22,35 +28,20 @@ function getSegmentationIndices(segmentationId) {
       ).volumeId
     ) {
       const volume = cache.getVolume(segmentationId);
-      scalarData = volume.getScalarData();
+      findUniqueElements(volume.getScalarData(), keySets);
     } else {
       const { imageIdReferenceMap } = segmentation.representationData
         .LABELMAP as LabelmapSegmentationDataStack;
-      const segImageIds = Array.from(imageIdReferenceMap.values());
-      const firstImage = cache.getImage(segImageIds[0]);
 
-      const TypedArray = firstImage.getPixelData().constructor.name;
-      scalarData = new window[TypedArray](
-        segImageIds.length * firstImage.rows * firstImage.columns
-      );
-
-      segImageIds.forEach((segImageId, index) => {
+      imageIdReferenceMap.forEach((segImageId) => {
         const image = cache.getImage(segImageId);
-        scalarData.set(
-          image.getPixelData(),
-          index * image.rows * image.columns
-        );
+        findUniqueElements(image.getPixelData(), keySets);
       });
     }
 
-    const segmentIndices = [];
-    for (let i = 0; i < scalarData.length; i++) {
-      const segmentIndex = scalarData[i];
-      if (segmentIndex !== 0 && !segmentIndices.includes(segmentIndex)) {
-        segmentIndices.push(segmentIndex);
-      }
-    }
-    return segmentIndices;
+    return Object.keys(keySets)
+      .map((k) => parseInt(k, 10))
+      .filter((k) => k !== 0);
   } else if (segmentation.type === SegmentationRepresentations.Contour) {
     const geometryIds = segmentation.representationData.CONTOUR?.geometryIds;
 
