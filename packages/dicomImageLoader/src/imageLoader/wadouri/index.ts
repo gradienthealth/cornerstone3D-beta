@@ -11,6 +11,7 @@ import fileManager from './fileManager';
 import getEncapsulatedImageFrame from './getEncapsulatedImageFrame';
 import getUncompressedImageFrame from './getUncompressedImageFrame';
 import loadFileRequest from './loadFileRequest';
+import loadZipRequest from './loadZipRequest';
 import {
   loadImageFromPromise,
   getLoaderForScheme,
@@ -35,6 +36,7 @@ export default {
   getEncapsulatedImageFrame,
   getUncompressedImageFrame,
   loadFileRequest,
+  loadZipRequest,
   loadImageFromPromise,
   getLoaderForScheme,
   loadImage,
