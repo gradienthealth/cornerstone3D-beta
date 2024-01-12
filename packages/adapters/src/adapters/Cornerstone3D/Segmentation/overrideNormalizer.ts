@@ -23,9 +23,35 @@ export default function overrideNormalize(metaData) {
         }
     }
 
+    class SecondaryCapturedImageNormalizer extends ImageNormalizer {
+        normalize() {
+            let normalizerClass: { new () } = null;
+            switch (this.dataSets[0].Modality) {
+                case "MG":
+                    normalizerClass = Normalizer.normalizerForSOPClassUID(
+                        "1.2.840.10008.5.1.4.1.1.1.2"
+                    );
+                    break;
+                case "XA":
+                    normalizerClass = Normalizer.normalizerForSOPClassUID(
+                        "1.2.840.10008.5.1.4.1.1.12.1"
+                    );
+                    break;
+                default:
+                    super.normalize();
+                    return;
+            }
+
+            const normalizer = new normalizerClass(this.dataSets);
+            normalizer.normalize();
+        }
+    }
+
     const SingleImageSOPClassUIDMap = {
-        "1.2.840.10008.5.1.4.1.1.7": MGImageNormalizer,
-        "1.2.840.10008.5.1.4.1.1.12.1": XAImageNormalizer
+        "1.2.840.10008.5.1.4.1.1.1.2": MGImageNormalizer,
+        "1.2.840.10008.5.1.4.1.1.1.2.1": MGImageNormalizer,
+        "1.2.840.10008.5.1.4.1.1.12.1": XAImageNormalizer,
+        "1.2.840.10008.5.1.4.1.1.7": SecondaryCapturedImageNormalizer
     };
 
     const parentNormalizerForSOPClassUID = Normalizer.normalizerForSOPClassUID;
