@@ -615,14 +615,13 @@ class Viewport implements IViewport {
       const canvasZero = this.worldToCanvas([bounds[0], bounds[2], bounds[4]]);
       const canvasEdge = this.worldToCanvas([bounds[1], bounds[3], bounds[5]]);
       const canvasImage = [
-        canvasEdge[0] - canvasZero[0],
-        canvasEdge[1] - canvasZero[1],
+        Math.abs(canvasEdge[0] - canvasZero[0]),
+        Math.abs(canvasEdge[1] - canvasZero[1]),
       ];
       const [imgWidth, imgHeight] = canvasImage;
       const [imageX, imageY] = imagePoint;
-      const imagePanX =
-        (zoom * imgWidth * (0.5 - imageX) * validateCanvasPanY) / imgHeight;
-      const imagePanY = zoom * validateCanvasPanY * (0.5 - imageY);
+      const imagePanX = imgWidth * (0.5 - imageX);
+      const imagePanY = imgHeight * (0.5 - imageY);
 
       const newPositionX = imagePanX + canvasPanX;
       const newPositionY = imagePanY + canvasPanY;
