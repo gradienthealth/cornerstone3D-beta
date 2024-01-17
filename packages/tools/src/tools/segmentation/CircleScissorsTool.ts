@@ -89,6 +89,12 @@ class CircleScissorsTool extends BaseTool {
    *
    */
   preMouseDownCallback = (evt: EventTypes.InteractionEventType): boolean => {
+    // This fix is already on the cornerstone PR 961 for segmentation tool cursor dissapears.
+    // TODO: Remove on rebase.
+    if (this.isDrawing === true) {
+      return;
+    }
+
     const eventDetail = evt.detail;
     const { currentPoints, element } = eventDetail;
     const worldPos = currentPoints.world;
@@ -291,6 +297,9 @@ class CircleScissorsTool extends BaseTool {
   _activateDraw = (element) => {
     element.addEventListener(Events.MOUSE_UP, this._endCallback);
     element.addEventListener(Events.MOUSE_DRAG, this._dragCallback);
+    // This fix is already on the cornerstone PR 961 for segmentation tool cursor dissapears.
+    // TODO: Remove on rebase.
+    element.addEventListener(Events.MOUSE_MOVE, this._dragCallback);
     element.addEventListener(Events.MOUSE_CLICK, this._endCallback);
 
     element.addEventListener(Events.TOUCH_TAP, this._endCallback);
@@ -304,6 +313,8 @@ class CircleScissorsTool extends BaseTool {
   _deactivateDraw = (element) => {
     element.removeEventListener(Events.MOUSE_UP, this._endCallback);
     element.removeEventListener(Events.MOUSE_DRAG, this._dragCallback);
+    // TODO: Remove on rebase.
+    element.removeEventListener(Events.MOUSE_MOVE, this._dragCallback);
     element.removeEventListener(Events.MOUSE_CLICK, this._endCallback);
 
     element.removeEventListener(Events.TOUCH_END, this._endCallback);
