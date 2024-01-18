@@ -30,6 +30,7 @@ const {
   ToolGroupManager,
   ArrowAnnotateTool,
   PlanarFreehandROITool,
+  KeyImageTool,
   Enums: csToolsEnums,
 } = cornerstoneTools;
 
@@ -96,6 +97,17 @@ element.addEventListener(Events.CAMERA_MODIFIED, (_) => {
 
 const toolGroupId = 'STACK_TOOL_GROUP_ID';
 
+const cancelToolDrawing = (evt) => {
+  const { element, key } = evt.detail;
+  if (key === 'Escape') {
+    cornerstoneTools.cancelActiveManipulations(element);
+  }
+};
+
+element.addEventListener(csToolsEnums.Events.KEY_DOWN, (evt) => {
+  cancelToolDrawing(evt);
+});
+
 const toolsNames = [
   LengthTool.toolName,
   ProbeTool.toolName,
@@ -107,6 +119,7 @@ const toolsNames = [
   CobbAngleTool.toolName,
   ArrowAnnotateTool.toolName,
   PlanarFreehandROITool.toolName,
+  KeyImageTool.toolName,
 ];
 let selectedToolName = toolsNames[0];
 
@@ -205,6 +218,7 @@ async function run() {
   cornerstoneTools.addTool(CobbAngleTool);
   cornerstoneTools.addTool(ArrowAnnotateTool);
   cornerstoneTools.addTool(PlanarFreehandROITool);
+  cornerstoneTools.addTool(KeyImageTool);
 
   // Define a tool group, which defines how mouse events map to tool commands for
   // Any viewport using the group
@@ -221,10 +235,11 @@ async function run() {
   toolGroup.addTool(CobbAngleTool.toolName);
   toolGroup.addTool(ArrowAnnotateTool.toolName);
   toolGroup.addTool(PlanarFreehandROITool.toolName);
+  toolGroup.addTool(KeyImageTool.toolName);
 
   // Set the initial state of the tools, here we set one tool active on left click.
   // This means left click will draw that tool.
-  toolGroup.setToolActive(LengthTool.toolName, {
+  toolGroup.setToolActive(toolsNames[0], {
     bindings: [
       {
         mouseButton: MouseBindings.Primary, // Left Click
@@ -239,7 +254,6 @@ async function run() {
   toolGroup.setToolPassive(CircleROITool.toolName);
   toolGroup.setToolPassive(BidirectionalTool.toolName);
   toolGroup.setToolPassive(AngleTool.toolName);
-  toolGroup.setToolPassive(CobbAngleTool.toolName);
   toolGroup.setToolPassive(ArrowAnnotateTool.toolName);
   toolGroup.setToolPassive(PlanarFreehandROITool.toolName);
 

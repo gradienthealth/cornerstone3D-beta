@@ -1,6 +1,5 @@
 import {
   BaseVolumeViewport,
-  StackViewport,
   cache,
   getEnabledElement,
   metaData,
@@ -94,7 +93,8 @@ abstract class AnnotationTool extends AnnotationDisplayTool {
   abstract toolSelectedCallback(
     evt: EventTypes.InteractionEventType,
     annotation: Annotation,
-    interactionType: InteractionTypes
+    interactionType: InteractionTypes,
+    canvasCoords?: Types.Point2
   ): void;
 
   /**
@@ -218,7 +218,7 @@ abstract class AnnotationTool extends AnnotationDisplayTool {
           canvasCoords[1] <= canvasBoundingBox.bottomRight[1]
         ) {
           data.handles.activeHandleIndex = null;
-          return textBox;
+          return textBox as ToolHandle;
         }
       }
     }
@@ -304,13 +304,10 @@ abstract class AnnotationTool extends AnnotationDisplayTool {
       const volumeId = targetId.split('volumeId:')[1];
       const volume = cache.getVolume(volumeId);
       return volume.scaling?.PT !== undefined;
-    } else if (viewport instanceof StackViewport) {
-      const scalingModule: Types.ScalingParameters | undefined =
-        imageId && metaData.get('scalingModule', imageId);
-      return typeof scalingModule?.suvbw === 'number';
-    } else {
-      throw new Error('Viewport is not a valid type');
     }
+    const scalingModule: Types.ScalingParameters | undefined =
+      imageId && metaData.get('scalingModule', imageId);
+    return typeof scalingModule?.suvbw === 'number';
   }
 
   /**

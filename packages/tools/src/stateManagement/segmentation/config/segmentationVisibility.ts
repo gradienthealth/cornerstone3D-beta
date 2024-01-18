@@ -2,24 +2,46 @@ import { cache, Types } from '@cornerstonejs/core';
 import * as SegmentationState from '../../../stateManagement/segmentation/segmentationState';
 import { getSegmentationRepresentations } from '../../../stateManagement/segmentation/segmentationState';
 import { ToolGroupSpecificRepresentation } from '../../../types/SegmentationStateTypes';
+import {
+  LabelmapSegmentationDataStack,
+  LabelmapSegmentationDataVolume,
+} from '../../../types/LabelmapTypes';
 import { triggerSegmentationRepresentationModified } from '../triggerSegmentationEvents';
 import SegmentationRepresentations from '../../../enums/SegmentationRepresentations';
 
 function getSegmentationIndices(segmentationId) {
   const segmentation = SegmentationState.getSegmentation(segmentationId);
 
-  if (segmentation.type === SegmentationRepresentations.Labelmap) {
-    const volume = cache.getVolume(segmentationId);
-    const scalarData = volume.getScalarData();
-
-    const keySet = {};
-    for (let i = 0; i < scalarData.length; i++) {
-      const segmentIndex = scalarData[i];
-      if (segmentIndex !== 0 && !keySet[segmentIndex]) {
-        keySet[segmentIndex] = true;
-      }
+  const findUniqueElements = (array, keySets) => {
+    for (let i = 0; i < array.length; i++) {
+      keySets[array[i]] = true;
     }
-    return Object.keys(keySet).map((it) => parseInt(it, 10));
+  };
+
+  if (segmentation.type === SegmentationRepresentations.Labelmap) {
+    const keySets = {};
+
+    if (
+      (
+        segmentation.representationData
+          .LABELMAP as LabelmapSegmentationDataVolume
+      ).volumeId
+    ) {
+      const volume = cache.getVolume(segmentationId);
+      findUniqueElements(volume.getScalarData(), keySets);
+    } else {
+      const { imageIdReferenceMap } = segmentation.representationData
+        .LABELMAP as LabelmapSegmentationDataStack;
+
+      imageIdReferenceMap.forEach((segImageId) => {
+        const image = cache.getImage(segImageId);
+        findUniqueElements(image.getPixelData(), keySets);
+      });
+    }
+
+    return Object.keys(keySets)
+      .map((k) => parseInt(k, 10))
+      .filter((k) => k !== 0);
   } else if (segmentation.type === SegmentationRepresentations.Contour) {
     const geometryIds = segmentation.representationData.CONTOUR?.geometryIds;
 

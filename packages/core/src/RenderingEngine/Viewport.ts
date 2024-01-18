@@ -10,7 +10,13 @@ import Events from '../enums/Events';
 import ViewportStatus from '../enums/ViewportStatus';
 import ViewportType from '../enums/ViewportType';
 import renderingEngineCache from './renderingEngineCache';
-import { triggerEvent, planar, isImageActor, actorIsA } from '../utilities';
+import {
+  triggerEvent,
+  planar,
+  isImageActor,
+  actorIsA,
+  isEqual,
+} from '../utilities';
 import hasNaNValues from '../utilities/hasNaNValues';
 import { RENDERING_DEFAULTS } from '../constants';
 import type {
@@ -49,6 +55,11 @@ class Viewport implements IViewport {
   readonly renderingEngineId: string;
   /** Type of viewport */
   readonly type: ViewportType;
+  /**
+   * The amount by which the images are inset in a viewport by default.
+   */
+  protected insetImageMultiplier = 1.1;
+
   protected flipHorizontal = false;
   protected flipVertical = false;
   public isDisabled: boolean;
@@ -71,6 +82,8 @@ class Viewport implements IViewport {
   readonly defaultOptions: any;
   /** options for the viewport which includes orientation axis, backgroundColor and displayArea */
   options: ViewportInputOptions;
+  /** informs if a new actor was added before a resetCameraClippingRange phase */
+  protected newActorAdded = false;
   private _suppressCameraModifiedEvents = false;
   /** A flag representing if viewport methods should fire events or not */
   readonly suppressEvents: boolean;
@@ -119,6 +132,7 @@ class Viewport implements IViewport {
   resize: () => void;
   getProperties: () => void;
   updateRenderingPipeline: () => void;
+  getNumberOfSlices: () => number;
 
   static get useCustomRenderingPipeline(): boolean {
     return false;
@@ -481,6 +495,7 @@ class Viewport implements IViewport {
     const renderer = this.getRenderer();
     renderer.addActor(actor);
     this._actors.set(actorUID, Object.assign({}, actorEntry));
+    this.newActorAdded = true;
   }
 
   /**
@@ -574,14 +589,15 @@ class Viewport implements IViewport {
     const { storeAsInitialCamera } = displayArea;
 
     // make calculations relative to the fitToCanvasCamera view
-    this.setCamera(this.fitToCanvasCamera, false);
+    this.setCamera(this.fitToCanvasCamera, storeAsInitialCamera);
 
     const { imageArea, imageCanvasPoint } = displayArea;
 
+    let zoom = 1;
     if (imageArea) {
       const [areaX, areaY] = imageArea;
-      const zoom = Math.min(this.getZoom() / areaX, this.getZoom() / areaY);
-      this.setZoom(zoom, storeAsInitialCamera);
+      zoom = Math.min(this.getZoom() / areaX, this.getZoom() / areaY);
+      this.setZoom(this.insetImageMultiplier * zoom, storeAsInitialCamera);
     }
 
     // getting the image info
@@ -599,8 +615,8 @@ class Viewport implements IViewport {
       const canvasZero = this.worldToCanvas([bounds[0], bounds[2], bounds[4]]);
       const canvasEdge = this.worldToCanvas([bounds[1], bounds[3], bounds[5]]);
       const canvasImage = [
-        canvasEdge[0] - canvasZero[0],
-        canvasEdge[1] - canvasZero[1],
+        Math.abs(canvasEdge[0] - canvasZero[0]),
+        Math.abs(canvasEdge[1] - canvasZero[1]),
       ];
       const [imgWidth, imgHeight] = canvasImage;
       const [imageX, imageY] = imagePoint;
@@ -717,7 +733,7 @@ class Viewport implements IViewport {
     }
 
     //const angle = vtkMath.radiansFromDegrees(activeCamera.getViewAngle())
-    const parallelScale = 1.1 * radius;
+    const parallelScale = this.insetImageMultiplier * radius;
 
     let w1 = bounds[1] - bounds[0];
     let w2 = bounds[3] - bounds[2];
@@ -733,7 +749,7 @@ class Viewport implements IViewport {
     // compute the radius of the enclosing sphere
     radius = Math.sqrt(radius) * 0.5;
 
-    const distance = 1.1 * radius;
+    const distance = this.insetImageMultiplier * radius;
 
     const viewUpToSet: Point3 =
       Math.abs(vtkMath.dot(viewUp, viewPlaneNormal)) > 0.999
@@ -781,6 +797,10 @@ class Viewport implements IViewport {
 
     if (storeAsInitialCamera) {
       this.setInitialCamera(modifiedCamera);
+    }
+
+    if (resetZoom) {
+      this.setZoom(1, storeAsInitialCamera);
     }
 
     const RESET_CAMERA_EVENT = {
@@ -1080,20 +1100,49 @@ class Viewport implements IViewport {
       vtkCamera.setClippingRange(clippingRange);
     }
 
-    // update clippingPlanes if volume viewports
-    const actorEntry = this.getDefaultActor();
+    // update clipping range only if focal point changed of a new actor is added
+    const prevFocalPoint = previousCamera.focalPoint;
+    const prevViewUp = previousCamera.viewUp;
 
-    if (!actorEntry || !actorEntry.actor) {
-      return;
-    }
+    if ((prevFocalPoint && focalPoint) || (prevViewUp && viewUp)) {
+      const currentViewPlaneNormal = <Point3>vtkCamera.getViewPlaneNormal();
+      const currentViewUp = <Point3>vtkCamera.getViewUp();
 
-    const isImageSlice = actorIsA(actorEntry, 'vtkImageSlice');
+      let cameraModifiedOutOfPlane = false;
+      let viewUpHasChanged = false;
 
-    if (!isImageSlice) {
-      this.updateClippingPlanesForActors(updatedCamera);
-    } else {
-      const renderer = this.getRenderer();
-      renderer.resetCameraClippingRange();
+      if (focalPoint) {
+        const deltaCamera = <Point3>[
+          focalPoint[0] - prevFocalPoint[0],
+          focalPoint[1] - prevFocalPoint[1],
+          focalPoint[2] - prevFocalPoint[2],
+        ];
+
+        cameraModifiedOutOfPlane =
+          Math.abs(vtkMath.dot(deltaCamera, currentViewPlaneNormal)) > 0;
+      }
+
+      if (viewUp) {
+        viewUpHasChanged = !isEqual(currentViewUp, prevViewUp);
+      }
+
+      // only modify the clipping planes if the camera is modified out of plane
+      // or a new actor is added and we need to update the clipping planes
+      if (cameraModifiedOutOfPlane || viewUpHasChanged || this.newActorAdded) {
+        const actorEntry = this.getDefaultActor();
+        if (!actorEntry?.actor) {
+          return;
+        }
+
+        if (!actorIsA(actorEntry, 'vtkActor')) {
+          this.updateClippingPlanesForActors(updatedCamera);
+        }
+
+        if (actorIsA(actorEntry, 'vtkImageSlice')) {
+          const renderer = this.getRenderer();
+          renderer.resetCameraClippingRange();
+        }
+      }
     }
 
     if (storeAsInitialCamera) {
@@ -1133,9 +1182,15 @@ class Viewport implements IViewport {
    * Updates the actors clipping planes orientation from the camera properties
    * @param updatedCamera - ICamera
    */
-  protected updateClippingPlanesForActors(updatedCamera: ICamera): void {
+  protected async updateClippingPlanesForActors(
+    updatedCamera: ICamera
+  ): Promise<void> {
     const actorEntries = this.getActors();
-    actorEntries.forEach((actorEntry) => {
+    // Todo: this was using an async and promise wait all because of the
+    // new surface rendering use case, which broke the more important 3D
+    // volume rendering, so reverting this back for now until I can figure
+    // out a better way to handle this.
+    actorEntries.map((actorEntry) => {
       // we assume that the first two clipping plane of the mapper are always
       // the 'camera' clipping. Update clipping planes only if the actor is
       // a vtkVolume
@@ -1144,7 +1199,13 @@ class Viewport implements IViewport {
       }
 
       const mapper = actorEntry.actor.getMapper();
-      const vtkPlanes = mapper.getClippingPlanes();
+      let vtkPlanes = actorEntry?.clippingFilter
+        ? actorEntry.clippingFilter.getClippingPlanes()
+        : mapper.getClippingPlanes();
+
+      if (vtkPlanes.length === 0 && actorEntry?.clippingFilter) {
+        vtkPlanes = [vtkPlane.newInstance(), vtkPlane.newInstance()];
+      }
 
       let slabThickness = RENDERING_DEFAULTS.MINIMUM_SLAB_THICKNESS;
       if (actorEntry.slabThickness) {
@@ -1159,7 +1220,19 @@ class Viewport implements IViewport {
         viewPlaneNormal,
         focalPoint
       );
+      triggerEvent(this.element, Events.CLIPPING_PLANES_UPDATED, {
+        actorEntry,
+        focalPoint,
+        vtkPlanes,
+        viewport: this,
+      });
     });
+
+    this.posProcessNewActors();
+  }
+
+  protected posProcessNewActors(): void {
+    this.newActorAdded = false;
   }
 
   public setOrientationOfClippingPlanes(

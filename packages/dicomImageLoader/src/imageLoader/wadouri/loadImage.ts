@@ -127,7 +127,12 @@ function loadImageFromDataSet(
         const pixelData = getPixelData(dataSet, frame);
         const transferSyntax = dataSet.string('x00020010');
 
-        imagePromise = createImage(imageId, pixelData, transferSyntax, options);
+        imagePromise = createImage(
+          imageId,
+          pixelData,
+          transferSyntax,
+          options
+        );
       } catch (error) {
         // Reject the error, and the dataSet
         reject({
@@ -184,7 +189,9 @@ function loadImage(
     delete options.loader;
   }
 
-  // if the dataset for this url is already loaded, use it
+  // if the dataset for this url is already loaded, use it, in case of multiframe
+  // images, we need to extract the frame pixelData from the dataset although the
+  // image is loaded
   if (dataSetCacheManager.isLoaded(parsedImageId.url)) {
     /**
      * @todo The arguments to the dataSetCacheManager below are incorrect.

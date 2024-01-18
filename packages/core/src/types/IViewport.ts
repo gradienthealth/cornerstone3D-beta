@@ -6,6 +6,7 @@ import { ActorEntry } from './IActor';
 import ViewportType from '../enums/ViewportType';
 import ViewportStatus from '../enums/ViewportStatus';
 import DisplayArea from './displayArea';
+import { IRetrieveConfiguration } from './IRetrieveConfiguration';
 
 /**
  * Viewport interface for cornerstone viewports
@@ -41,7 +42,7 @@ interface IViewport {
   isDisabled: boolean;
   /** The rendering state of this viewport */
   viewportStatus: ViewportStatus;
-  /** the rotation applied to the view */
+  /** get the rotation either from the camera provided or the viewport if not provided */
   getRotation: () => number;
   /** frameOfReferenceUID the viewport's default actor is rendering */
   getFrameOfReferenceUID: () => string;
@@ -103,6 +104,8 @@ interface IViewport {
   setPan(pan: Point2, storeAsInitialCamera?: boolean);
   /** sets the camera */
   setCamera(cameraInterface: ICamera, storeAsInitialCamera?: boolean): void;
+  /** Gets the number of slices in the current camera orientation */
+  getNumberOfSlices(): number;
   /** whether the viewport has custom rendering */
   customRenderViewportToCanvas: () => unknown;
   _getCorners(bounds: Array<number>): Array<number>[];

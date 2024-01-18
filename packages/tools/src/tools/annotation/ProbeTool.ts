@@ -7,7 +7,6 @@ import {
   triggerEvent,
   eventTarget,
   utilities as csUtils,
-  utilities,
 } from '@cornerstonejs/core';
 import type { Types } from '@cornerstonejs/core';
 
@@ -17,6 +16,7 @@ import {
   getAnnotations,
   removeAnnotation,
 } from '../../stateManagement/annotation/annotationState';
+import { getCalibratedProbeUnitsAndValue } from '../../utilities/getCalibratedUnits';
 import {
   drawHandles as drawHandlesSvg,
   drawTextBox as drawTextBoxSvg,
@@ -24,6 +24,7 @@ import {
 import { state } from '../../store';
 import { Events } from '../../enums';
 import { getViewportIdsWithToolToRender } from '../../utilities/viewportFilters';
+import roundNumber from '../../utilities/roundNumber';
 import {
   resetElementCursor,
   hideElementCursor,
@@ -578,20 +579,33 @@ class ProbeTool extends AnnotationTool {
       index[1] = Math.round(index[1]);
       index[2] = Math.round(index[2]);
 
+      const samplesPerPixel =
+        scalarData.length / dimensions[2] / dimensions[1] / dimensions[0];
+
       if (csUtils.indexWithinDimensions(index, dimensions)) {
         this.isHandleOutsideImage = false;
-        const yMultiple = dimensions[0];
-        const zMultiple = dimensions[0] * dimensions[1];
+        const yMultiple = dimensions[0] * samplesPerPixel;
+        const zMultiple = dimensions[0] * dimensions[1] * samplesPerPixel;
 
-        const value =
-          scalarData[index[2] * zMultiple + index[1] * yMultiple + index[0]];
+        const baseIndex =
+          index[2] * zMultiple +
+          index[1] * yMultiple +
+          index[0] * samplesPerPixel;
+        let value =
+          samplesPerPixel > 2
+            ? [
+                scalarData[baseIndex],
+                scalarData[baseIndex + 1],
+                scalarData[baseIndex + 2],
+              ]
+            : scalarData[baseIndex];
 
         // Index[2] for stackViewport is always 0, but for visualization
         // we reset it to be imageId index
         if (targetId.startsWith('imageId:')) {
           const imageId = targetId.split('imageId:')[1];
           const imageURI = csUtils.imageIdToURI(imageId);
-          const viewports = utilities.getViewportsWithImageURI(
+          const viewports = csUtils.getViewportsWithImageURI(
             imageURI,
             renderingEngineId
           );
@@ -601,11 +615,28 @@ class ProbeTool extends AnnotationTool {
           index[2] = viewport.getCurrentImageIdIndex();
         }
 
-        const modalityUnit = getModalityUnit(
-          modality,
-          annotation.metadata.referencedImageId,
-          modalityUnitOptions
-        );
+        let modalityUnit;
+
+        if (modality === 'US') {
+          const calibratedResults = getCalibratedProbeUnitsAndValue(image, [
+            index,
+          ]);
+
+          const hasEnhancedRegionValues = calibratedResults.values.every(
+            (value) => value !== null
+          );
+
+          value = hasEnhancedRegionValues ? calibratedResults.values : value;
+          modalityUnit = hasEnhancedRegionValues
+            ? calibratedResults.units
+            : 'raw';
+        } else {
+          modalityUnit = getModalityUnit(
+            modality,
+            annotation.metadata.referencedImageId,
+            modalityUnitOptions
+          );
+        }
 
         cachedStats[targetId] = {
           index,
@@ -651,7 +682,13 @@ function defaultGetTextLines(data, targetId): string[] {
 
   textLines.push(`(${index[0]}, ${index[1]}, ${index[2]})`);
 
-  textLines.push(`${value.toFixed(2)} ${modalityUnit}`);
+  if (value instanceof Array && modalityUnit instanceof Array) {
+    for (let i = 0; i < value.length; i++) {
+      textLines.push(`${roundNumber(value[i])} ${modalityUnit[i]}`);
+    }
+  } else {
+    textLines.push(`${roundNumber(value)} ${modalityUnit}`);
+  }
 
   return textLines;
 }
