@@ -50,6 +50,7 @@ export default function overrideNormalize(metaData) {
     const SingleImageSOPClassUIDMap = {
         "1.2.840.10008.5.1.4.1.1.1.2": MGImageNormalizer,
         "1.2.840.10008.5.1.4.1.1.1.2.1": MGImageNormalizer,
+        "1.2.840.10008.5.1.4.1.1.13.1.3": MGImageNormalizer,
         "1.2.840.10008.5.1.4.1.1.12.1": XAImageNormalizer,
         "1.2.840.10008.5.1.4.1.1.7": SecondaryCapturedImageNormalizer
     };
