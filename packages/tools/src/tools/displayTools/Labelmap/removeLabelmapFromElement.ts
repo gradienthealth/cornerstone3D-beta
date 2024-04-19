@@ -20,7 +20,9 @@ function removeLabelmapFromElement(
   const { viewport } = enabledElement;
 
   if (viewport instanceof StackViewport) {
-    // Todo: we don't have stack segmentation yet
+    (viewport as Types.IStackViewport).removeActors([
+      segmentationRepresentationUID,
+    ]);
     return;
   }
 
