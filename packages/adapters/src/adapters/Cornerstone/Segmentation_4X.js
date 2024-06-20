@@ -731,6 +731,28 @@ function findReferenceSourceImageId(
         );
     }
 
+    if (imageId === undefined && frameSourceImageSequence) {
+        const uniqueImagePositionPatients = new Set();
+
+        imageIds.forEach(imgId => {
+            const imageMetadata = metadataProvider.get("instance", imgId);
+            uniqueImagePositionPatients.add(
+                imageMetadata.ImagePositionPatient?.toString()
+            );
+        });
+
+        if (uniqueImagePositionPatients.size !== imageIds.length) {
+            const { ReferencedSOPInstanceUID, ReferencedFrameNumber } =
+                frameSourceImageSequence;
+            const imageIdPrefix =
+                sopUIDImageIdIndexMap[ReferencedSOPInstanceUID].split(
+                    "frame="
+                )[0];
+
+            imageId = `${imageIdPrefix}frame=${ReferencedFrameNumber}`;
+        }
+    }
+
     if (imageId === undefined && ReferencedSeriesSequence) {
         const referencedSeriesSequence = Array.isArray(ReferencedSeriesSequence)
             ? ReferencedSeriesSequence[0]
