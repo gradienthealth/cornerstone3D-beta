@@ -283,14 +283,17 @@ export function createAndCacheDerivedImage(
   );
   const derivedImageId = imageId;
 
-  ['imagePixelModule', 'imagePlaneModule', 'generalSeriesModule'].forEach(
-    (type) => {
-      genericMetadataProvider.add(derivedImageId, {
-        type,
-        metadata: metaData.get(type, referencedImageId),
-      });
-    }
-  );
+  [
+    'imagePixelModule',
+    'imagePlaneModule',
+    'generalSeriesModule',
+    'voiLutModule',
+  ].forEach((type) => {
+    genericMetadataProvider.add(derivedImageId, {
+      type,
+      metadata: metaData.get(type, referencedImageId),
+    });
+  });
 
   const localImage = createAndCacheLocalImage(
     { scalarData: imageScalarData, onCacheAdd, skipCreateBuffer },
@@ -350,6 +353,7 @@ export function createAndCacheLocalImage(
   preventCache = false
 ): IImage {
   const imagePlaneModule = metaData.get('imagePlaneModule', imageId);
+  const voiLutModule = metaData.get('voiLutModule', imageId);
 
   const length = imagePlaneModule.rows * imagePlaneModule.columns;
 
@@ -363,7 +367,7 @@ export function createAndCacheLocalImage(
     slope: 1,
     minPixelValue: 0,
     maxPixelValue: 255,
-    voiLUTFunction: undefined,
+    voiLUTFunction: voiLutModule.voiLUTFunction,
     rows: imagePlaneModule.rows,
     columns: imagePlaneModule.columns,
     getCanvas: undefined, // todo: which canvas?

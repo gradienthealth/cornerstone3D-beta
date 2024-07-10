@@ -807,6 +807,13 @@ class Viewport implements IViewport {
   protected setDisplayAreaFit(displayArea: DisplayArea) {
     const { imageArea, imageCanvasPoint } = displayArea;
 
+    if (imageArea) {
+      const [areaX, areaY] = imageArea;
+      const initZoom = this.getZoom();
+      const zoom = Math.min(initZoom / areaX, initZoom / areaY);
+      this.setZoom(this.insetImageMultiplier * zoom, false);
+    }
+
     const devicePixelRatio = window?.devicePixelRatio || 1;
     const imageData = this.getDefaultImageData();
     if (!imageData) {
@@ -814,33 +821,15 @@ class Viewport implements IViewport {
     }
     const canvasWidth = this.sWidth / devicePixelRatio;
     const canvasHeight = this.sHeight / devicePixelRatio;
-    const dimensions = imageData.getDimensions();
-    const canvasZero = this.worldToCanvas(imageData.indexToWorld([0, 0, 0]));
-    const canvasEdge = this.worldToCanvas(
-      imageData.indexToWorld([
-        dimensions[0] - 1,
-        dimensions[1] - 1,
-        dimensions[2],
-      ])
-    );
+    const bounds = imageData.getBounds();
+    const canvasZero = this.worldToCanvas([bounds[0], bounds[2], bounds[4]]);
+    const canvasEdge = this.worldToCanvas([bounds[1], bounds[3], bounds[5]]);
 
     const canvasImage = [
       Math.abs(canvasEdge[0] - canvasZero[0]),
       Math.abs(canvasEdge[1] - canvasZero[1]),
     ];
     const [imgWidth, imgHeight] = canvasImage;
-
-    if (imageArea) {
-      const [areaX, areaY] = imageArea;
-      const requireX = Math.abs((areaX * imgWidth) / canvasWidth);
-      const requireY = Math.abs((areaY * imgHeight) / canvasHeight);
-
-      const initZoom = this.getZoom();
-      const fitZoom = this.getZoom(this.fitToCanvasCamera);
-      const absZoom = Math.min(1 / requireX, 1 / requireY);
-      const applyZoom = (absZoom * initZoom) / fitZoom;
-      this.setZoom(applyZoom, false);
-    }
 
     // getting the image info
     // getting the image info
