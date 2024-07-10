@@ -807,6 +807,13 @@ class Viewport implements IViewport {
   protected setDisplayAreaFit(displayArea: DisplayArea) {
     const { imageArea, imageCanvasPoint } = displayArea;
 
+    if (imageArea) {
+      const [areaX, areaY] = imageArea;
+      const initZoom = this.getZoom();
+      const zoom = Math.min(initZoom / areaX, initZoom / areaY);
+      this.setZoom(this.insetImageMultiplier * zoom, false);
+    }
+
     const devicePixelRatio = window?.devicePixelRatio || 1;
     const imageData = this.getDefaultImageData();
     if (!imageData) {
@@ -823,18 +830,6 @@ class Viewport implements IViewport {
       Math.abs(canvasEdge[1] - canvasZero[1]),
     ];
     const [imgWidth, imgHeight] = canvasImage;
-
-    if (imageArea) {
-      const [areaX, areaY] = imageArea;
-      const requireX = Math.abs((areaX * imgWidth) / canvasWidth);
-      const requireY = Math.abs((areaY * imgHeight) / canvasHeight);
-
-      const initZoom = this.getZoom();
-      const fitZoom = this.getZoom(this.fitToCanvasCamera);
-      const absZoom = Math.min(1 / requireX, 1 / requireY);
-      const applyZoom = (absZoom * initZoom) / fitZoom;
-      this.setZoom(applyZoom, false);
-    }
 
     // getting the image info
     // getting the image info

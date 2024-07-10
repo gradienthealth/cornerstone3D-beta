@@ -3078,6 +3078,10 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
   }
 
   private setColormapGPU(colormap: ColormapPublic) {
+    if (!colormap) {
+      return;
+    }
+
     const ActorEntry = this.getDefaultActor();
     const actor = ActorEntry.actor as ImageActor;
     const actorProp = actor.getProperty();
