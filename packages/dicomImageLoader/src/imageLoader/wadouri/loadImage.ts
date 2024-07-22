@@ -1,8 +1,9 @@
 import { DataSet } from 'dicom-parser';
-import { Types } from '@cornerstonejs/core';
+import { Types, metaData } from '@cornerstonejs/core';
 import createImage from '../createImage';
 import { xhrRequest } from '../internal/index';
-import dataSetCacheManager from './dataSetCacheManager';
+import external from '../../externalModules';
+import dataSetCacheManager, { loadedDataSets } from './dataSetCacheManager';
 import {
   LoadRequestFunction,
   DICOMLoaderIImage,
@@ -124,7 +125,13 @@ function loadImageFromDataSet(
       let imagePromise: Promise<DICOMLoaderIImage | ImageFrame>;
 
       try {
-        const pixelData = getPixelData(dataSet, frame);
+        let pixelData;
+        const dataSetElements = dataSet.elements;
+        if (dataSetElements.x7FE00010[frame] instanceof Uint8Array) {
+          pixelData = dataSetElements.x7FE00010[frame];
+        } else {
+          pixelData = getPixelData(dataSet, frame);
+        }
         const transferSyntax = dataSet.string('x00020010');
 
         imagePromise = createImage(
@@ -163,6 +170,138 @@ function loadImageFromDataSet(
   };
 }
 
+function loadImageWithRange(
+  imageId: string,
+  loader: LoadRequestFunction,
+  frameIndex: number,
+  sharedCacheKey: string,
+  options: DICOMLoaderImageOptions,
+  callbacks?: { imageDoneCallback: (image: DICOMLoaderIImage) => void }
+): Types.IImageLoadObject {
+  const start = new Date().getTime();
+  const imageLoadObject: Types.IImageLoadObject = {
+    cancelFn: undefined,
+    promise: undefined,
+  };
+  const instance = metaData.get('instance', imageId);
+  const { ExtendedOffsetTable, ExtendedOffsetTableLengths } = instance;
+  const startByte = ExtendedOffsetTable[frameIndex];
+  const endByte = startByte + ExtendedOffsetTableLengths[frameIndex];
+
+  const headerPromise: Promise<{ dataSet; headerArrayBuffer }> = new Promise(
+    (resolve) => {
+      if (loadedDataSets[sharedCacheKey]?.dataSet) {
+        resolve({
+          dataSet: loadedDataSets[sharedCacheKey]?.dataSet,
+          headerArrayBuffer: loadedDataSets[
+            sharedCacheKey
+          ]?.dataSet.byteArray.slice(0, ExtendedOffsetTable[0] - 1),
+        });
+      } else {
+        loader(sharedCacheKey, imageId, {
+          Range: `bytes=0-${ExtendedOffsetTable[0] - 1}`,
+        }).then((arraybuffer) => {
+          const dataSet = external.dicomParser.parseDicom(
+            new Uint8Array(arraybuffer),
+            {
+              untilTag: 'x7fe00010',
+            }
+          );
+
+          resolve({ dataSet, headerArrayBuffer: arraybuffer });
+        });
+      }
+    }
+  );
+
+  const pixelDataPromise = loader(sharedCacheKey, imageId, {
+    Range: `bytes=${startByte}-${endByte}`,
+  }).then((arraybuffer) => {
+    return { pixelDataArrayBuffer: arraybuffer };
+  });
+
+  imageLoadObject.promise = new Promise((resolve, reject) => {
+    Promise.all([headerPromise, pixelDataPromise]).then(
+      (values /* , xhr*/) => {
+        const { dataSet, headerArrayBuffer } = values[0];
+        const { pixelDataArrayBuffer } = values[1];
+        const loadEnd = new Date().getTime();
+        const pixelData = new Uint8Array(pixelDataArrayBuffer);
+        const transferSyntax = instance._meta.TransferSyntaxUID;
+
+        if (!dataSetCacheManager.isLoaded(sharedCacheKey)) {
+          dataSet.elements.x7fe00010 = {};
+          dataSet.elements.x7fe00010[frameIndex] = pixelData;
+          const completeByteArray = new Uint8Array(
+            headerArrayBuffer.byteLength + pixelDataArrayBuffer.byteLength
+          );
+          completeByteArray.set(new Uint8Array(headerArrayBuffer));
+          completeByteArray.set(pixelData, headerArrayBuffer.byteLength);
+          dataSet.byteArray = completeByteArray;
+
+          dataSetCacheManager.addDataSet(sharedCacheKey, dataSet);
+        } else {
+          const dataSetElements =
+            loadedDataSets[sharedCacheKey].dataSet.elements;
+          dataSet.elements.x7fe00010 = dataSetElements.x7fe00010;
+          dataSet.elements.x7fe00010[frameIndex] = pixelData;
+          const completeByteArray = new Uint8Array(
+            dataSet.byteArray.byteLength + pixelDataArrayBuffer.byteLength
+          );
+          completeByteArray.set(dataSet.byteArray.byteLength);
+          completeByteArray.set(pixelData, headerArrayBuffer.byteLength);
+          dataSet.byteArray = completeByteArray;
+
+          dataSetCacheManager.update(sharedCacheKey, dataSet);
+        }
+
+        const imagePromise = createImage(
+          imageId,
+          pixelData,
+          transferSyntax,
+          options
+        );
+
+        addDecache(imageLoadObject, imageId);
+
+        imagePromise.then(
+          (image) => {
+            image = image as DICOMLoaderIImage;
+            image.data = dataSet;
+            image.sharedCacheKey = sharedCacheKey;
+            const end = new Date().getTime();
+
+            image.loadTimeInMS = loadEnd - start;
+            image.totalTimeInMS = end - start;
+            if (
+              callbacks !== undefined &&
+              callbacks.imageDoneCallback !== undefined
+            ) {
+              callbacks.imageDoneCallback(image);
+            }
+            resolve(image);
+          },
+          function (error) {
+            // Reject the error, and the dataSet
+            reject({
+              error,
+              dataSet,
+            });
+          }
+        );
+      },
+      function (error) {
+        // Reject the error
+        reject({
+          error,
+        });
+      }
+    );
+  });
+
+  return imageLoadObject;
+}
+
 function getLoaderForScheme(scheme: string): LoadRequestFunction {
   if (scheme === 'dicomweb' || scheme === 'wadouri') {
     return xhrRequest;
@@ -172,6 +311,15 @@ function getLoaderForScheme(scheme: string): LoadRequestFunction {
   else if (scheme === 'dicomzip'){
     return loadZipRequest;
   }
+}
+
+function framePixelDataExists(parsedImageId): boolean {
+  const pixelDataElement =
+    loadedDataSets[parsedImageId.url].dataSet.elements.x7fe00010;
+  return !!(
+    pixelDataElement?.dataOffset ||
+    pixelDataElement?.[parsedImageId.pixelDataFrame]
+  );
 }
 
 function loadImage(
@@ -192,7 +340,10 @@ function loadImage(
   // if the dataset for this url is already loaded, use it, in case of multiframe
   // images, we need to extract the frame pixelData from the dataset although the
   // image is loaded
-  if (dataSetCacheManager.isLoaded(parsedImageId.url)) {
+  if (
+    dataSetCacheManager.isLoaded(parsedImageId.url) &&
+    framePixelDataExists(parsedImageId)
+  ) {
     /**
      * @todo The arguments to the dataSetCacheManager below are incorrect.
      */
@@ -205,6 +356,18 @@ function loadImage(
     return loadImageFromDataSet(
       dataSet,
       imageId,
+      parsedImageId.pixelDataFrame,
+      parsedImageId.url,
+      options
+    );
+  }
+
+  const instance = metaData.get('instance', imageId);
+  if (instance?.ExtendedOffsetTable && instance?.ExtendedOffsetTableLengths) {
+    // Fetch only a single frame pixeldata of a multiframe dicom file.
+    return loadImageWithRange(
+      imageId,
+      loader,
       parsedImageId.pixelDataFrame,
       parsedImageId.url,
       options
