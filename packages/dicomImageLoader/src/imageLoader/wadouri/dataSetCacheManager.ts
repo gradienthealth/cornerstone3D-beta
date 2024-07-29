@@ -224,6 +224,19 @@ export function getInfo(): CornerstoneWadoLoaderCacheManagerInfoResponse {
   };
 }
 
+function addDataSet(uri, dataSet) {
+  const { cornerstone } = external;
+
+  loadedDataSets[uri] = { dataSet, cacheCount: 1 };
+  cacheSizeInBytes += dataSet.byteArray.byteLength;
+
+  cornerstone.triggerEvent(cornerstone.events, 'datasetscachechanged', {
+    uri,
+    action: 'loaded',
+    cacheInfo: getInfo(),
+  });
+}
+
 // removes all cached datasets from memory
 function purge(): void {
   loadedDataSets = {};
@@ -239,6 +252,7 @@ export default {
   purge,
   get,
   update,
+  addDataSet,
 };
 
 export { loadedDataSets };
