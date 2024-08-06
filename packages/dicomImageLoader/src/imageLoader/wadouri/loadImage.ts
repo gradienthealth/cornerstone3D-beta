@@ -248,6 +248,7 @@ function loadImageWithRange(
           completeByteArray.set(pixelData, headerArrayBuffer.byteLength);
           dataSet.byteArray = completeByteArray;
 
+          loadedDataSets[sharedCacheKey].cacheCount++;
           dataSetCacheManager.update(sharedCacheKey, dataSet);
         }
 
