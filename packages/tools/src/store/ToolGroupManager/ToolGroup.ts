@@ -281,7 +281,10 @@ export default class ToolGroup implements IToolGroup {
     }
 
     if (mode === ToolModes.Passive) {
-      this.setToolPassive(toolName);
+      this.setToolPassive(
+        toolName,
+        options || this.restoreToolOptions[toolName]
+      );
       return;
     }
 
@@ -405,7 +408,10 @@ export default class ToolGroup implements IToolGroup {
    *
    * @param toolName - tool name
    */
-  public setToolPassive(toolName: string): void {
+  public setToolPassive(
+    toolName: string,
+    toolBindingsOptions?: SetToolBindingsType
+  ): void {
     const toolInstance = this._toolInstances[toolName];
 
     if (toolInstance === undefined) {
@@ -421,7 +427,9 @@ export default class ToolGroup implements IToolGroup {
     const prevToolOptions = this.getToolOptions(toolName);
     const toolOptions = Object.assign(
       {
-        bindings: prevToolOptions ? prevToolOptions.bindings : [],
+        bindings: prevToolOptions
+          ? prevToolOptions.bindings
+          : toolBindingsOptions?.bindings || [],
       },
       prevToolOptions,
       {
@@ -436,9 +444,16 @@ export default class ToolGroup implements IToolGroup {
       (binding) =>
         binding.mouseButton !== defaultMousePrimary || binding.modifierKey
     );
-    // If there are other bindings, set the tool to be active
+    // If there are other bindings, set the tool to be active.
+    // But if all the other bindings have primary button, then consider them as
+    // additional bindings and only set it active when the tool is active.
     let mode = Passive;
-    if (toolOptions.bindings.length !== 0) {
+    if (
+      toolOptions.bindings.length !== 0 &&
+      !toolOptions.bindings.every(
+        (binding) => binding.mouseButton === defaultMousePrimary
+      )
+    ) {
       mode = Active;
       toolOptions.mode = mode;
     }
