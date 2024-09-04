@@ -201,6 +201,13 @@ enum Events {
   STACK_VIEWPORT_SCROLL = 'CORNERSTONE_STACK_VIEWPORT_SCROLL',
 
   /**
+   * Triggers on the event target when a new image is added to the stack viewport.
+   * Make use of {@link EventTypes.StackViewportImagesAdded | StackViewportImagesAdded Event Type } for typing your event listeners for STACK_VIEWPORT_IMAGES_ADDED event,
+   * and see what event detail is included in {@link EventTypes.StackViewportImagesAddedEventDetail | StackViewportImagesAdded Event Detail }
+   */
+  STACK_VIEWPORT_IMAGES_ADDED = 'CORNERSTONE_STACK_VIEWPORT_IMAGES_ADDED',
+
+  /**
    * Triggers on the eventTarget when a new geometry is added to the geometry cache
    */
   GEOMETRY_CACHE_GEOMETRY_ADDED = 'CORNERSTONE_GEOMETRY_CACHE_GEOMETRY_ADDED',
