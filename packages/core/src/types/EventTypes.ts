@@ -278,6 +278,14 @@ type StackViewportScrollEventDetail = {
 };
 
 /**
+ * STACK_VIEWPORT_IMAGES_ADDED event detail
+ */
+type StackViewportImagesAddedEventDetail = {
+  imageIds: string[];
+  viewportId: string;
+};
+
+/**
  * CameraModified Event type
  */
 type CameraModifiedEvent = CustomEventType<CameraModifiedEventDetail>;
@@ -393,6 +401,12 @@ type StackViewportNewStackEvent =
 
 type StackViewportScrollEvent = CustomEventType<StackViewportScrollEventDetail>;
 
+/**
+ * STACK_VIEWPORT_IMAGES_ADDED
+ */
+type StackViewportImagesAddedEvent =
+  CustomEventType<StackViewportImagesAddedEventDetail>;
+
 export type {
   CameraModifiedEventDetail,
   CameraModifiedEvent,
@@ -438,4 +452,6 @@ export type {
   StackViewportNewStackEventDetail,
   StackViewportScrollEvent,
   StackViewportScrollEventDetail,
+  StackViewportImagesAddedEvent,
+  StackViewportImagesAddedEventDetail,
 };

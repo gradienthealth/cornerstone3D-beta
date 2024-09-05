@@ -80,6 +80,7 @@ import {
 import {
   StackViewportNewStackEventDetail,
   StackViewportScrollEventDetail,
+  StackViewportImagesAddedEventDetail,
   VoiModifiedEventDetail,
 } from '../types/EventTypes';
 import { ImageActor } from '../types/IActor';
@@ -2163,6 +2164,7 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
    */
   public async addImages(stackInputs: Array<IStackInput>): Promise<void> {
     const actors = this.getActors();
+    const imageIds = [];
     stackInputs.forEach((stackInput) => {
       const image = cache.getImage(stackInput.imageId);
 
@@ -2181,12 +2183,20 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
       const imageActor = this.createActorMapper(imagedata);
       if (imageActor) {
         actors.push({ uid: stackInput.actorUID, actor: imageActor });
+        imageIds.push(stackInput.imageId);
         if (stackInput.callback) {
           stackInput.callback({ imageActor, imageId: stackInput.imageId });
         }
       }
     });
     this.setActors(actors);
+
+    const eventDetail: StackViewportImagesAddedEventDetail = {
+      imageIds,
+      viewportId: this.id,
+    };
+
+    triggerEvent(eventTarget, Events.STACK_VIEWPORT_IMAGES_ADDED, eventDetail);
   }
 
   /**
