@@ -180,7 +180,15 @@ function loadImageWithRange(
 ): Types.IImageLoadObject {
   const start = new Date().getTime();
   const instance = metaData.get('instance', imageId);
-  const { ExtendedOffsetTable, ExtendedOffsetTableLengths } = instance;
+  const { ExtendedOffsetTable, ExtendedOffsetTableLengths, FileOffsets } =
+    instance;
+  const fileStartByte = FileOffsets?.startByte ?? 0;
+
+  const protocolIndex = sharedCacheKey.indexOf('://'); // http://, https://
+  const tarFileInnerPath = sharedCacheKey.indexOf('://', protocolIndex + 3);
+  if (imageId.split(':')[0] !== 'dicomzip' && tarFileInnerPath >= 0) {
+    sharedCacheKey = sharedCacheKey.substring(0, tarFileInnerPath);
+  }
 
   const headerPromise: Promise<{ dataSet; headerArrayBuffer }> = new Promise(
     (resolve) => {
@@ -193,7 +201,9 @@ function loadImageWithRange(
         });
       } else {
         loader(sharedCacheKey, imageId, {
-          Range: `bytes=0-${ExtendedOffsetTable[0] - 1}`,
+          Range: `bytes=${fileStartByte}-${
+            fileStartByte + ExtendedOffsetTable[0] - 1
+          }`,
         }).then((arraybuffer) => {
           const dataSet = external.dicomParser.parseDicom(
             new Uint8Array(arraybuffer),
@@ -206,7 +216,7 @@ function loadImageWithRange(
     }
   );
 
-  const startByte = ExtendedOffsetTable[frameIndex];
+  const startByte = fileStartByte + ExtendedOffsetTable[frameIndex];
   const endByte = startByte + ExtendedOffsetTableLengths[frameIndex];
   const pixelDataPromise = loader(sharedCacheKey, imageId, {
     Range: `bytes=${startByte}-${endByte}`,
@@ -381,7 +391,7 @@ function loadImage(
   return loadImageFromPromise(
     dataSetPromise,
     imageId,
-    parsedImageId.frame,
+    parsedImageId.pixelDataFrame,
     parsedImageId.url,
     options
   );

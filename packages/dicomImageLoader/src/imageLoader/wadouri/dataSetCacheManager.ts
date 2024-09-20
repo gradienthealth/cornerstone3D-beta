@@ -84,6 +84,12 @@ function load(
 ): CornerstoneWadoLoaderCachedPromise {
   const { cornerstone, dicomParser } = external;
 
+  const protocolIndex = uri.indexOf('://'); // http://, https://
+  const tarFileInnerPath = uri.indexOf('://', protocolIndex + 3);
+  if (imageId.split(':')[0] !== 'dicomzip' && tarFileInnerPath >= 0) {
+    uri = uri.substring(0, tarFileInnerPath);
+  }
+
   // if already loaded return it right away
   if (loadedDataSets[uri]) {
     // console.log('using loaded dataset ' + uri);
