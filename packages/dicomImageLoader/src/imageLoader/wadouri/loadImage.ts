@@ -180,14 +180,12 @@ function loadImageWithRange(
 ): Types.IImageLoadObject {
   const start = new Date().getTime();
   const instance = metaData.get('instance', imageId);
-  const { ExtendedOffsetTable, ExtendedOffsetTableLengths, FileOffsets } =
-    instance;
+  const { CustomOffsetTable, CustomOffsetTableLengths, FileOffsets } = instance;
   const fileStartByte = FileOffsets?.startByte ?? 0;
 
-  const protocolIndex = sharedCacheKey.indexOf('://'); // http://, https://
-  const tarFileInnerPath = sharedCacheKey.indexOf('://', protocolIndex + 3);
-  if (imageId.split(':')[0] !== 'dicomzip' && tarFileInnerPath >= 0) {
-    sharedCacheKey = sharedCacheKey.substring(0, tarFileInnerPath);
+  const tarFileInnerPathIndex = sharedCacheKey.indexOf('.tar://');
+  if (tarFileInnerPathIndex >= 0) {
+    sharedCacheKey = sharedCacheKey.substring(0, tarFileInnerPathIndex + 4);
   }
 
   const headerPromise: Promise<{ dataSet; headerArrayBuffer }> = new Promise(
@@ -197,12 +195,12 @@ function loadImageWithRange(
           dataSet: loadedDataSets[sharedCacheKey]?.dataSet,
           headerArrayBuffer: loadedDataSets[
             sharedCacheKey
-          ].dataSet.byteArray.slice(0, ExtendedOffsetTable[0] - 1),
+          ].dataSet.byteArray.slice(0, CustomOffsetTable[0] - 1),
         });
       } else {
         loader(sharedCacheKey, imageId, {
           Range: `bytes=${fileStartByte}-${
-            fileStartByte + ExtendedOffsetTable[0] - 1
+            fileStartByte + CustomOffsetTable[0] - 1
           }`,
         }).then((arraybuffer) => {
           const dataSet = external.dicomParser.parseDicom(
@@ -216,8 +214,8 @@ function loadImageWithRange(
     }
   );
 
-  const startByte = fileStartByte + ExtendedOffsetTable[frameIndex];
-  const endByte = startByte + ExtendedOffsetTableLengths[frameIndex];
+  const startByte = fileStartByte + CustomOffsetTable[frameIndex];
+  const endByte = startByte + CustomOffsetTableLengths[frameIndex];
   const pixelDataPromise = loader(sharedCacheKey, imageId, {
     Range: `bytes=${startByte}-${endByte}`,
   }).then((arraybuffer) => ({ pixelDataArrayBuffer: arraybuffer }));
@@ -233,7 +231,7 @@ function loadImageWithRange(
           values;
         const loadEnd = new Date().getTime();
         const pixelData = new Uint8Array(pixelDataArrayBuffer);
-        const transferSyntax = instance._meta.TransferSyntaxUID;
+        const transferSyntax = dataSet.string('x00020010');
 
         if (!dataSetCacheManager.isLoaded(sharedCacheKey)) {
           dataSet.elements.x7fe00010 = {};
@@ -254,8 +252,8 @@ function loadImageWithRange(
           const completeByteArray = new Uint8Array(
             dataSet.byteArray.byteLength + pixelDataArrayBuffer.byteLength
           );
-          completeByteArray.set(dataSet.byteArray.byteLength);
-          completeByteArray.set(pixelData, headerArrayBuffer.byteLength);
+          completeByteArray.set(dataSet.byteArray);
+          completeByteArray.set(pixelData, dataSet.byteArray.byteLength);
           dataSet.byteArray = completeByteArray;
 
           loadedDataSets[sharedCacheKey].cacheCount++;
@@ -370,7 +368,7 @@ function loadImage(
   }
 
   const instance = metaData.get('instance', imageId);
-  if (instance?.ExtendedOffsetTable && instance?.ExtendedOffsetTableLengths) {
+  if (instance?.CustomOffsetTable && instance?.CustomOffsetTableLengths) {
     // Fetch only a single frame pixeldata of a multiframe dicom file.
     return loadImageWithRange(
       imageId,
