@@ -1,12 +1,16 @@
 import { metaData, getWebWorkerManager, Enums } from '@cornerstonejs/core';
-import tarFileManager from './tarFileManager';
-import { getOptions } from '../internal/index';
-import { FILE_STREAMING_WORKER_NAME } from './registerFileStreaming';
+import tarFileManager from '../wadors/tarFileManager';
+import { getOptions } from './index';
+import {
+  FILE_STREAMING_WORKER_NAME,
+  MAXIMUM_WORKER_FETCH_SIZE,
+} from '../wadors/registerFileStreaming';
 
 interface tarImageUrl {
   tarUrl: string;
   dicomPath: string;
 }
+const THRESHOLD = 10000;
 
 const tarPromises = {};
 
@@ -39,6 +43,15 @@ function loadTarRequest(
     tarPromise = tarPromises[tarUrl];
   } else {
     tarPromise = new Promise<void>(async (resolveTar, rejectTar) => {
+      if (
+        tarFileManager.getTotalSize() + THRESHOLD >
+        MAXIMUM_WORKER_FETCH_SIZE
+      ) {
+        throw new Error(
+          `fileStreaming.ts: Maximum size(${MAXIMUM_WORKER_FETCH_SIZE}) for fetching files reached`
+        );
+      }
+
       const options = getOptions();
       const beforeSendHeaders = options.beforeSend();
 
@@ -73,10 +86,17 @@ function loadTarRequest(
           { requestType: Enums.RequestType.Prefetch }
         )
         .then(() => {
-          delete tarPromises[tarUrl];
           resolveTar();
         })
-        .catch((error) => rejectTar(error));
+        .catch((error) => {
+          webWorkerManager.removeEventListener(
+            FILE_STREAMING_WORKER_NAME,
+            'message',
+            handleFirstChunk
+          );
+          rejectTar(error);
+        })
+        .finally(() => delete tarPromises[tarUrl]);
     });
 
     tarPromises[tarUrl] = tarPromise;
@@ -111,7 +131,14 @@ function loadTarRequest(
       handleChunkAppend
     );
 
-    await tarPromise.catch((error) => rejectRequest(error));
+    await tarPromise.catch((error) => {
+      webWorkerManager.removeEventListener(
+        FILE_STREAMING_WORKER_NAME,
+        'message',
+        handleChunkAppend
+      );
+      rejectRequest(error);
+    });
   });
 }
 

@@ -2,6 +2,7 @@ import { xhrRequest } from '../internal/index';
 // import rangeRequest from '../internal/rangeRequest';
 import streamRequest from '../internal/streamRequest';
 import rangeRequest from '../internal/rangeRequest';
+import tarRequest from '../internal/tarRequest';
 import extractMultipart from './extractMultipart';
 import { getImageQualityStatus } from './getImageQualityStatus';
 import { CornerstoneWadoRsLoaderOptions } from './loadImage';
@@ -44,6 +45,12 @@ function getPixelData(
   // Use the streaming parser only when configured to do so
   if (retrieveOptions.streaming !== undefined) {
     return streamRequest(url, imageId, headers, options);
+  }
+
+  // Use the tar loader for dicomtar sceme
+  if (imageId.includes('dicomtar')) {
+    const url = imageId.split('dicomtar:')[1];
+    return tarRequest(url, imageId, headers);
   }
 
   /**

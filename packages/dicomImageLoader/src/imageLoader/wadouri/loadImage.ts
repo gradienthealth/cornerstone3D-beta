@@ -14,7 +14,6 @@ import getPixelData from './getPixelData';
 import loadFileRequest from './loadFileRequest';
 import loadZipRequest from './loadZipRequest';
 import parseImageId from './parseImageId';
-import loadTarRequest from './loadTarRequest';
 
 // add a decache callback function to clear out our dataSetCacheManager
 function addDecache(imageLoadObject: Types.IImageLoadObject, imageId: string) {
@@ -308,8 +307,6 @@ function getLoaderForScheme(scheme: string): LoadRequestFunction {
   }
   else if (scheme === 'dicomzip'){
     return loadZipRequest;
-  } else if (scheme === 'dicomtar') {
-    return loadTarRequest;
   }
 }
 
