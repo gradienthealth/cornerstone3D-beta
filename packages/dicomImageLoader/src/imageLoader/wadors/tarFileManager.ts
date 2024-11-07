@@ -46,7 +46,15 @@ function remove(url: string): void {
 }
 
 function purge(): void {
+  const totalSize = getTotalSize();
   tarFiles = {};
+
+  const workerManager = getWebWorkerManager();
+  workerManager.executeTask(
+    FILE_STREAMING_WORKER_NAME,
+    'decreaseFetchedSize',
+    totalSize
+  );
 }
 
 export default {
