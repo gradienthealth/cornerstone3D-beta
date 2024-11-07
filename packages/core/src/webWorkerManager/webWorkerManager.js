@@ -213,6 +213,42 @@ class CentralizedWorkerManager {
       worker.terminate();
     });
   }
+
+  postMessage(workerName, message) {
+    const workerProperties = this.workerRegistry[workerName];
+    if (!workerProperties) {
+      console.error(`Worker type '${workerName}' is not registered.`);
+      return;
+    }
+
+    workerProperties.nativeWorkers.forEach((worker) =>
+      worker.postMessage(message)
+    );
+  }
+
+  addEventListener(workerName, eventType = 'message', listener) {
+    const workerProperties = this.workerRegistry[workerName];
+    if (!workerProperties) {
+      console.error(`Worker type '${workerName}' is not registered.`);
+      return;
+    }
+
+    workerProperties.nativeWorkers.forEach((worker) =>
+      worker.addEventListener(eventType, listener)
+    );
+  }
+
+  removeEventListener(workerName, eventType = 'message', listener) {
+    const workerProperties = this.workerRegistry[workerName];
+    if (!workerProperties) {
+      console.error(`Worker type '${workerName}' is not registered.`);
+      return;
+    }
+
+    workerProperties.nativeWorkers.forEach((worker) =>
+      worker.removeEventListener(eventType, listener)
+    );
+  }
 }
 
 export default CentralizedWorkerManager;

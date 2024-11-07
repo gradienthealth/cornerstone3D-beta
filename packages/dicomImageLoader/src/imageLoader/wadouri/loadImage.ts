@@ -180,13 +180,7 @@ function loadImageWithRange(
 ): Types.IImageLoadObject {
   const start = new Date().getTime();
   const instance = metaData.get('instance', imageId);
-  const { CustomOffsetTable, CustomOffsetTableLengths, FileOffsets } = instance;
-  const fileStartByte = FileOffsets?.startByte ?? 0;
-
-  const tarFileInnerPathIndex = sharedCacheKey.indexOf('.tar://');
-  if (tarFileInnerPathIndex >= 0) {
-    sharedCacheKey = sharedCacheKey.substring(0, tarFileInnerPathIndex + 4);
-  }
+  const { CustomOffsetTable, CustomOffsetTableLengths } = instance;
 
   const headerPromise: Promise<{ dataSet; headerArrayBuffer }> = new Promise(
     (resolve) => {
@@ -199,9 +193,7 @@ function loadImageWithRange(
         });
       } else {
         loader(sharedCacheKey, imageId, {
-          Range: `bytes=${fileStartByte}-${
-            fileStartByte + CustomOffsetTable[0] - 1
-          }`,
+          Range: `bytes=0-${CustomOffsetTable[0] - 1}`,
         }).then((arraybuffer) => {
           const dataSet = external.dicomParser.parseDicom(
             new Uint8Array(arraybuffer),
@@ -214,7 +206,7 @@ function loadImageWithRange(
     }
   );
 
-  const startByte = fileStartByte + CustomOffsetTable[frameIndex];
+  const startByte = CustomOffsetTable[frameIndex];
   const endByte = startByte + CustomOffsetTableLengths[frameIndex];
   const pixelDataPromise = loader(sharedCacheKey, imageId, {
     Range: `bytes=${startByte}-${endByte}`,
