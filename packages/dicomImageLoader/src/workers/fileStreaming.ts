@@ -17,7 +17,7 @@ const fileStreaming = {
   },
 
   async stream(args) {
-    const { url, headers } = args;
+    const { url, headers, useSharedArrayBuffer } = args;
     const controller = new AbortController();
 
     const response = await fetch(url, {
@@ -42,8 +42,14 @@ const fileStreaming = {
     }
 
     this.fetchedSize += position;
-    let sharedArraybuffer = new SharedArrayBuffer(+totalLength);
-    let fileArraybuffer = new Uint8Array(sharedArraybuffer);
+    let sharedArraybuffer: SharedArrayBuffer, fileArraybuffer: Uint8Array;
+
+    if (useSharedArrayBuffer) {
+      sharedArraybuffer = new SharedArrayBuffer(+totalLength);
+      fileArraybuffer = new Uint8Array(sharedArraybuffer);
+    } else {
+      fileArraybuffer = new Uint8Array(+totalLength);
+    }
     fileArraybuffer.set(firstChunk);
     postMessage({ url, position, fileArraybuffer });
 
@@ -77,6 +83,7 @@ const fileStreaming = {
         isAppending: true,
         url,
         position: position,
+        chunk: !useSharedArrayBuffer ? chunk : null,
       });
     }
 

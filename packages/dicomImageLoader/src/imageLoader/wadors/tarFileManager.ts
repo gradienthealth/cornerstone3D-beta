@@ -21,9 +21,20 @@ function get(
   return tarFiles[url].data.slice(offsets.startByte, offsets.endByte + 1);
 }
 
-function setPosition(url: string, position: number) {
+function setPosition(url: string, position: number): void {
   if (tarFiles[url]) {
     tarFiles[url].position = position;
+  }
+}
+
+function getPosition(url: string): number {
+  return tarFiles[url]?.position;
+}
+
+function append(url: string, chunk: Uint8Array, position: number): void {
+  if (tarFiles[url]) {
+    tarFiles[url].data.set(chunk, position - chunk.length);
+    setPosition(url, position);
   }
 }
 
@@ -34,7 +45,7 @@ function getTotalSize(): number {
 }
 
 function remove(url: string): void {
-  const removedSize = tarFiles[url].position;
+  const removedSize = getPosition(url);
   delete tarFiles[url];
 
   const workerManager = getWebWorkerManager();
@@ -61,6 +72,8 @@ export default {
   set,
   get,
   setPosition,
+  getPosition,
+  append,
   getTotalSize,
   remove,
   purge,

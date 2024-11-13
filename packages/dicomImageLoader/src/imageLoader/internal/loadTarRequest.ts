@@ -1,4 +1,9 @@
-import { metaData, getWebWorkerManager, Enums } from '@cornerstonejs/core';
+import {
+  metaData,
+  getWebWorkerManager,
+  Enums,
+  getShouldUseSharedArrayBuffer,
+} from '@cornerstonejs/core';
 import tarFileManager from '../wadors/tarFileManager';
 import { getOptions } from './index';
 import {
@@ -82,6 +87,7 @@ function loadTarRequest(
           {
             url: tarUrl,
             headers: beforeSendHeaders,
+            useSharedArrayBuffer: getShouldUseSharedArrayBuffer(),
           },
           { requestType: Enums.RequestType.Prefetch }
         )
@@ -103,21 +109,22 @@ function loadTarRequest(
   }
 
   return new Promise<ArrayBufferLike>(async (resolveRequest, rejectRequest) => {
+    let resolved = false;
     function handleChunkAppend(evt) {
-      const { url, position, isAppending } = evt.data;
+      const { url, position, chunk, isAppending } = evt.data;
 
-      isAppending && tarFileManager.setPosition(url, position);
+      if (isAppending) {
+        if (chunk) {
+          tarFileManager.append(url, chunk, position);
+        } else {
+          tarFileManager.setPosition(url, position);
+        }
+      }
 
-      if (position > handledOffsets.endByte && url === tarUrl) {
+      if (!resolved && position > handledOffsets.endByte && url === tarUrl) {
         try {
           const file = tarFileManager.get(url, handledOffsets);
-
-          webWorkerManager.removeEventListener(
-            FILE_STREAMING_WORKER_NAME,
-            'message',
-            handleChunkAppend
-          );
-
+          resolved = true;
           resolveRequest(file.buffer);
         } catch (error) {
           rejectRequest(error);
@@ -131,14 +138,17 @@ function loadTarRequest(
       handleChunkAppend
     );
 
-    await tarPromise.catch((error) => {
-      webWorkerManager.removeEventListener(
-        FILE_STREAMING_WORKER_NAME,
-        'message',
-        handleChunkAppend
-      );
-      rejectRequest(error);
-    });
+    await tarPromise
+      .catch((error) => {
+        rejectRequest(error);
+      })
+      .finally(() => {
+        webWorkerManager.removeEventListener(
+          FILE_STREAMING_WORKER_NAME,
+          'message',
+          handleChunkAppend
+        );
+      });
   });
 }
 
