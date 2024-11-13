@@ -1,12 +1,12 @@
 import { getWebWorkerManager } from '@cornerstonejs/core';
 
-export const FILE_STREAMING_WORKER_NAME = 'file-streaming-test';
+export const FILE_STREAMING_WORKER_NAME = 'file-streaming-test2';
 export const MAXIMUM_WORKER_FETCH_SIZE = 2 * 1_073_741_824; // 2 x 1 GB
 
 export function registerFileStreamingWebWorker() {
   const workerFn = () => {
     return new Worker(
-      new URL('../../workers/fileStreaming.ts?v=13', import.meta.url),
+      new URL('../../workers/fileStreaming.ts', import.meta.url),
       { name: FILE_STREAMING_WORKER_NAME }
     );
   };
