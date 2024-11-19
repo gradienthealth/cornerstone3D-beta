@@ -79,6 +79,7 @@ class RequestPoolManager {
     thumbnail: 0,
     prefetch: 0,
     compute: 0,
+    precache: 0,
   };
   /* maximum number of requests of each type. */
   public maxNumRequests: {
@@ -86,6 +87,7 @@ class RequestPoolManager {
     thumbnail: number;
     prefetch: number;
     compute: number;
+    precache: number;
   };
   /* A public property that is used to set the delay between requests. */
   public grabDelay: number;
@@ -104,6 +106,7 @@ class RequestPoolManager {
       thumbnail: { 0: [] },
       prefetch: { 0: [] },
       compute: { 0: [] },
+      precache: { 0: [] },
     };
 
     this.grabDelay = 5;
@@ -114,6 +117,7 @@ class RequestPoolManager {
       thumbnail: 0,
       prefetch: 0,
       compute: 0,
+      precache: 0,
     };
 
     this.maxNumRequests = {
@@ -121,6 +125,7 @@ class RequestPoolManager {
       thumbnail: 6,
       prefetch: 5,
       compute: 15,
+      precache: 5,
     };
   }
 
@@ -271,12 +276,16 @@ class RequestPoolManager {
       RequestType.Prefetch
     );
     const hasRemainingComputeRequests = this.sendRequests(RequestType.Compute);
+    const hasRemainingPreCacheRequests = this.sendRequests(
+      RequestType.PreCache
+    );
 
     if (
       !hasRemainingInteractionRequests &&
       !hasRemainingThumbnailRequests &&
       !hasRemainingPrefetchRequests &&
-      !hasRemainingComputeRequests
+      !hasRemainingComputeRequests &&
+      !hasRemainingPreCacheRequests
     ) {
       this.awake = false;
     }

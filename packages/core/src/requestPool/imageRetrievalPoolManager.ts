@@ -20,6 +20,7 @@ imageRetrievalPoolManager.setMaxSimultaneousRequests(
   200
 );
 imageRetrievalPoolManager.setMaxSimultaneousRequests(RequestType.Prefetch, 200);
+imageRetrievalPoolManager.setMaxSimultaneousRequests(RequestType.PreCache, 200);
 imageRetrievalPoolManager.grabDelay = 0;
 
 export default imageRetrievalPoolManager;

@@ -39,5 +39,6 @@ imageLoadPoolManager.grabDelay = 0;
 imageLoadPoolManager.setMaxSimultaneousRequests(RequestType.Interaction, 1000);
 imageLoadPoolManager.setMaxSimultaneousRequests(RequestType.Thumbnail, 1000);
 imageLoadPoolManager.setMaxSimultaneousRequests(RequestType.Prefetch, 1000);
+imageLoadPoolManager.setMaxSimultaneousRequests(RequestType.PreCache, 1000);
 
 export default imageLoadPoolManager;

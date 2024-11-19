@@ -10,6 +10,8 @@ enum RequestType {
   Prefetch = 'prefetch',
   /** Lower priority, often used for background computations in the worker */
   Compute = 'compute',
+  /** Lowest Priority, used to cache adjascent studies using GoogleSheetService */
+  PreCache = 'precache',
 }
 
 export default RequestType;
