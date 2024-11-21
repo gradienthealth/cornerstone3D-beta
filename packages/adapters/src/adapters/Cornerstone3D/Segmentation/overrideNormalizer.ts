@@ -15,10 +15,14 @@ export default function overrideNormalize(metaData) {
 
     class MGImageNormalizer extends ImageNormalizer {
         normalize() {
-            this.dataset = getHandledSingleImageDataset(
-                this.datasets[0],
-                metaData
-            );
+            if (this.datasets[0].NumberOfFrames > 1) {
+                super.convertToMultiframe();
+            } else {
+                this.dataset = getHandledSingleImageDataset(
+                    this.datasets[0],
+                    metaData
+                );
+            }
             super.normalizeMultiframe();
         }
     }
@@ -55,6 +59,10 @@ export default function overrideNormalize(metaData) {
         "1.2.840.10008.5.1.4.1.1.7": SecondaryCapturedImageNormalizer
     };
 
+    const extraMultiFrameSopInstanceUIDs = [
+        "1.2.840.10008.5.1.4.1.1.13.1.3" // Breast Tomosynthesis Image Storage
+    ];
+
     const parentNormalizerForSOPClassUID = Normalizer.normalizerForSOPClassUID;
     Normalizer.normalizerForSOPClassUID = sopClassUID => {
         const normalizerClass = parentNormalizerForSOPClassUID(sopClassUID);
@@ -64,6 +72,15 @@ export default function overrideNormalize(metaData) {
         } else {
             return SingleImageSOPClassUIDMap[sopClassUID];
         }
+    };
+
+    const parentIsMultiframeSOPClassUID = Normalizer.isMultiframeSOPClassUID;
+    Normalizer.isMultiframeSOPClassUID = sopClassUID => {
+        const isMultiFrame = parentIsMultiframeSOPClassUID(sopClassUID);
+
+        return (
+            isMultiFrame || extraMultiFrameSopInstanceUIDs.includes(sopClassUID)
+        );
     };
 }
 

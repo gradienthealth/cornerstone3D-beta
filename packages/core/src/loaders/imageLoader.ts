@@ -261,6 +261,7 @@ export function createAndCacheDerivedImage(
     'imagePlaneModule',
     'generalSeriesModule',
     'voiLutModule',
+    'instance',
   ].forEach((type) => {
     genericMetadataProvider.add(derivedImageId, {
       type,
