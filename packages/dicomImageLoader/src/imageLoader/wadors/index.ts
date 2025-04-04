@@ -11,7 +11,6 @@ import getPixelData from './getPixelData';
 import metaDataManager from './metaDataManager';
 import loadImage from './loadImage';
 import register from './register';
-import tarFileManager from './tarFileManager';
 
 const metaData = {
   getNumberString,
@@ -28,5 +27,4 @@ export default {
   loadImage,
   metaDataManager,
   register,
-  tarFileManager,
 };
