@@ -6,6 +6,7 @@ import extractMultipart from './extractMultipart';
 import { getImageQualityStatus } from './getImageQualityStatus';
 import { CornerstoneWadoRsLoaderOptions } from './loadImage';
 import { RangeRetrieveOptions } from 'core/dist/types/types';
+import codRequest from './codRequest';
 
 function getPixelData(
   uri: string,
@@ -35,6 +36,11 @@ function getPixelData(
   // Swap the streaming data out if a new instance starts.
   if (streamingData?.url !== url) {
     options.streamingData = { url };
+  }
+
+  // Use the cod loader only when image scheme is cod:
+  if (imageId.startsWith('cod:')) {
+    return codRequest(url, imageId, headers);
   }
 
   if ((retrieveOptions as RangeRetrieveOptions).rangeIndex !== undefined) {
