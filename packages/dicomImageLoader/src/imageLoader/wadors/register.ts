@@ -14,6 +14,7 @@ export default function () {
   const MAXIMUM_WORKER_FETCH_SIZE = 2 * 1_073_741_824; // 2 x 1 GB
   const codDicomWebServer = new CodDicomWebServer({
     maxWorkerFetchSize: MAXIMUM_WORKER_FETCH_SIZE,
+    enableLocalCache: true,
   });
   setWadoRsWebServer(codDicomWebServer);
 }
