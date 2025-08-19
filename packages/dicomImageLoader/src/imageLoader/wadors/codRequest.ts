@@ -1,7 +1,7 @@
 import { Enums, metaData } from '@cornerstonejs/core';
 import { FetchType } from 'cod-dicomweb-server';
 
-import { getWadoRsWebServer } from '../internal/codWebServer';
+import { getCodHeaders, getWadoRsWebServer } from '../internal/codWebServer';
 import { getOptions } from '../internal/options';
 import type { CornerstoneWadoRsLoaderOptions } from '../wadors/loadImage';
 
@@ -31,12 +31,13 @@ export default function codRequest(
 
   // @ts-ignore
   const headers = getOptions()?.beforeSend() || {};
+  const codHeaders = getCodHeaders();
   const webServer = getWadoRsWebServer();
 
   return webServer
     .fetchCod(
       deidReplacedUrl,
-      { ...defaultHeaders, ...headers },
+      { ...defaultHeaders, ...headers, ...codHeaders },
       {
         useSharedArrayBuffer: false,
         fetchType: FetchType.API_OPTIMIZED,
