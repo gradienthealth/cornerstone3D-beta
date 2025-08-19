@@ -1,7 +1,7 @@
 import { default as xhrRequest } from './xhrRequest';
 import { default as streamRequest } from './streamRequest';
 import { setOptions, getOptions } from './options';
-import { getWadoRsWebServer } from './codWebServer';
+import { getWadoRsWebServer, setCodHeaders } from './codWebServer';
 
 const internal = {
   xhrRequest,
@@ -9,6 +9,7 @@ const internal = {
   setOptions,
   getOptions,
   getWadoRsWebServer,
+  setCodHeaders,
 };
 
 export {
@@ -18,4 +19,5 @@ export {
   internal,
   streamRequest,
   getWadoRsWebServer,
+  setCodHeaders,
 };
