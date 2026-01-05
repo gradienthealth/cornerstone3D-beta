@@ -1,7 +1,6 @@
 import {
   Enums,
   imageRetrievalPoolManager,
-  metaData,
   utilities,
 } from '@cornerstonejs/core';
 import { Enums as csCoreEnums, type Types } from '@cornerstonejs/core';
@@ -9,7 +8,6 @@ import { Enums as csCoreEnums, type Types } from '@cornerstonejs/core';
 import createImage from '../createImage';
 import getPixelData from './getPixelData';
 import type { DICOMLoaderIImage, DICOMLoaderImageOptions } from '../../types';
-import { getWadoRsWebServer } from '../internal';
 
 const { ProgressiveIterator } = utilities;
 const { ImageQualityStatus } = Enums;
@@ -215,17 +213,6 @@ function loadImage(
   return {
     promise: uncompressedIterator.getDonePromise(),
     cancelFn: undefined,
-    decache: () => {
-      // Removing the CodDicomwebSever cache here.
-      try {
-        const webServer = getWadoRsWebServer();
-        const instance = metaData.get('instance', imageId);
-        const { DeidSeriesInstanceUID } = instance;
-        webServer.delete(DeidSeriesInstanceUID);
-      } catch (error) {
-        console.warn('Error deleting the CodDicomwebServer cache', error);
-      }
-    },
   };
 }
 
