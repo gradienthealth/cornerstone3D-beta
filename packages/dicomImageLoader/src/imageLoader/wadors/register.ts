@@ -14,7 +14,7 @@ export default function () {
   const MAXIMUM_CACHE_SIZE = 4 * 1_073_741_824; // 4 x 1 GB
   const codDicomWebServer = new CodDicomWebServer({
     maxCacheSize: MAXIMUM_CACHE_SIZE,
-    enableLocalCache: true,
+    enableOPFSCache: true,
   });
   setWadoRsWebServer(codDicomWebServer);
 }
