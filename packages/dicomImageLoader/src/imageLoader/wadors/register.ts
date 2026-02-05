@@ -11,10 +11,10 @@ export default function () {
 
   // initialize the CodDicomWebServer
   registerImageLoader('cod', loadImage as unknown as Types.ImageLoaderFn);
-  const MAXIMUM_WORKER_FETCH_SIZE = 2 * 1_073_741_824; // 2 x 1 GB
+  const MAXIMUM_CACHE_SIZE = 4 * 1_073_741_824; // 4 x 1 GB
   const codDicomWebServer = new CodDicomWebServer({
-    maxWorkerFetchSize: MAXIMUM_WORKER_FETCH_SIZE,
-    enableLocalCache: true,
+    maxCacheSize: MAXIMUM_CACHE_SIZE,
+    enableOPFSCache: true,
   });
   setWadoRsWebServer(codDicomWebServer);
 }
