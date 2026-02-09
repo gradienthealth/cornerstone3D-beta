@@ -37,6 +37,7 @@ export default function codRequest(
   return webServer
     .fetchCod(
       deidReplacedUrl,
+      // @ts-ignore
       { ...defaultHeaders, ...headers, ...codHeaders },
       {
         useSharedArrayBuffer: false,
