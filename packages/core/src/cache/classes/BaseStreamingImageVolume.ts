@@ -535,7 +535,7 @@ export class BaseStreamingImageVolume
 
     const requests = this.getImageLoadRequests(5);
 
-    requests.reverse().forEach((request) => {
+    requests.forEach((request) => {
       if (!request) {
         // there is a cached image for the imageId and no requests will fire
         return;
